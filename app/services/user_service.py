@@ -45,3 +45,7 @@ class UserService(ABC):
         self, db: Session, user: UserSignInWithGoogle
     ) -> UserOut:
         pass
+
+    @abstractmethod
+    def update_is_verified(self, db: Session, email: str) -> UserOut:
+        pass

@@ -37,7 +37,7 @@ class EmailServiceImpl(EmailService):
             return False
 
     async def send_reset_password_email(self, email: str, token: str, db: Session):
-        user_info: UserOut = await self.__user_service.get_one_with_filter(
+        user_info: UserOut = self.__user_service.get_one_with_filter_or_none(
             db=db, filter={"email": email}
         )
         user_name = user_info.display_name

@@ -8,14 +8,21 @@
 
 [Miniconda installation guide video](https://www.youtube.com/watch?v=R04snR6jl1s)
 
-##### 3. Create a new virtual environment, a new project fastapi, install the necessary libraries, and run the project
+##### 3. Create a new virtual environment, install the necessary libraries, and run the project
 
 ###### `Create a new virtual environment`
 
 ```terminal
 conda create --name new_env_name python=3.9.6
 
-conda activate env_assist_ai 
+conda activate new_env_name
+
+```
+
+###### `Can view list conda virtual environment`
+
+```terminal
+conda env list
 ```
 
 ###### `Create a new project fastapi`
@@ -31,6 +38,7 @@ pip install "uvicorn[standard]"
 ```
 
 ###### `Install the necessary libraries`
+
 ```terminal
 pip install -r requirements.txt
 ```

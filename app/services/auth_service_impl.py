@@ -17,8 +17,10 @@ from app.schemas.token import Token
 from app.schemas.user import (UserCreate, UserInDB, UserOut, UserSignIn,
                               UserSignInWithGoogle, UserSignUp, UserUpdate)
 from app.schemas.user_subscription import UserSubscriptionCreate
+from app.schemas.user_subscription_plan import UserSubscriptionPlan
 from app.services.auth_service import AuthService
 from app.services.email_service_impl import EmailServiceImpl
+from app.services.membership_service_impl import MembershipServiceImpl
 from app.services.session_service_impl import SessionServiceImpl
 from app.services.subscription_plan_service_impl import \
     SubscriptionPlanServiceImpl
@@ -37,6 +39,7 @@ class AuthServiceImpl(AuthService):
         self.__email_service = EmailServiceImpl()
         self.__user_subscription_service = UserSubscriptionServiceImpl()
         self.__subscription_plan_service = SubscriptionPlanServiceImpl()
+        self.__membership_service = MembershipServiceImpl()
 
     def sign_up(self, db: Session, user: UserSignUp) -> UserOut:
         hashed_password = utils.hash(user.password)
@@ -51,31 +54,7 @@ class AuthServiceImpl(AuthService):
                 deleted_at=None,
             ),
         )
-
-        default_plan = self.__subscription_plan_service.get_one_with_filter_or_none(
-            db=db, filter={"plan_title": "monthly_free"}
-        )
-        if default_plan is None:
-            logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.sign_up: Default plan not found: monthly_free"
-            )
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Default plan not found"
-            )
-
-        # logger.info(f"Default plan: {dict(default_plan)}")
-        self.__user_subscription_service.create(
-            db=db,
-            user_subscription=UserSubscriptionCreate(
-                user_id=new_user.id,
-                plan_id=default_plan.id,
-                expire_at=datetime.now() + timedelta(days=30),
-                is_active=True,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                deleted_at=None,
-            ),
-        )
+        self.__membership_service.create_default_subscription(db, new_user)
         return new_user
 
     def sign_in(self, db: Session, user_credentials: UserSignIn) -> Token:
@@ -115,21 +94,23 @@ class AuthServiceImpl(AuthService):
 
     def verify_user(self, db: Session, token: str) -> Token:
         current_user = oauth2.get_current_user(db=db, token=token)
-        self.__user_service.update_one_with_filter(
+
+        self.__user_service.update_is_verified(
             db=db,
-            filter={"email": current_user.email},
-            user=UserUpdate(
-                is_verified=True,
-            ),
+            email=current_user.email,
         )
         session_updated = self.__session_service.update_one_with_filter(
             db=db,
             filter={"token": token},
-            session=SessionUpdate(expires_at=utils.get_expires_at()),
+            session=SessionUpdate(
+                token=token,
+                expires_at=utils.get_expires_at(),
+                updated_at=datetime.now(),
+            ),
         )
         return Token(access_token=session_updated.token, token_type="bearer")
 
-    async def create_session(self, db: Session, user_id: uuid.UUID):
+    def create_session(self, db: Session, user_id: uuid.UUID):
         access_token = oauth2.create_access_token(data={"user_id": str(user_id)})
         session_created = self.__session_service.create(
             db=db,
@@ -172,14 +153,13 @@ class AuthServiceImpl(AuthService):
                 db=db, filter={"email": user_info["email"]}
             )
             if user_found is not None:
-                session_created = await self.create_session(db, user_found.id)
+                session_created = self.create_session(db, user_found.id)
                 if not user_found.is_verified:
                     await self.__email_service.send_verification_email(
                         user_info, session_created.token
                     )
                     return RedirectResponse(
-                        url="http://localhost:3000/success"
-                        # url="https://raw.githubusercontent.com/DNAnh01/assets/main/02.1.%20Sign%20up%20-%20Success.png"
+                        url="https://raw.githubusercontent.com/DNAnh01/assets/main/02.1.%20Sign%20up%20-%20Success.png"
                     )
                 return Token(access_token=session_created.token, token_type="bearer")
             else:
@@ -199,13 +179,16 @@ class AuthServiceImpl(AuthService):
                 new_user = self.__user_service.create_user_with_google(
                     db=db, user=user_created_with_google
                 )
-                session_created = await self.create_session(db, new_user.id)
+
+                self.__membership_service.create_default_subscription(db, new_user)
+                
+                session_created = self.create_session(db, new_user.id)
+
                 await self.__email_service.send_verification_email(
                     user_info, session_created.token
                 )
                 return RedirectResponse(
-                    url="http://localhost:3000/sign-in"
-                    # url="https://raw.githubusercontent.com/DNAnh01/assets/main/02.1.%20Sign%20up%20-%20Success.png"
+                    url="https://raw.githubusercontent.com/DNAnh01/assets/main/02.1.%20Sign%20up%20-%20Success.png"
                 )
 
     def sign_out(self, db: Session, token: str) -> Response:
@@ -235,7 +218,7 @@ class AuthServiceImpl(AuthService):
             )
             raise HTTPException(status_code=400, detail="User not found")
 
-        session_created = await self.create_session(db=db, user_id=user_found.id)
+        session_created = self.create_session(db=db, user_id=user_found.id)
         await self.__email_service.send_reset_password_email(
             email=user_found.email, token=session_created.token, db=db
         )
@@ -264,3 +247,10 @@ class AuthServiceImpl(AuthService):
             user=UserUpdate(password_hash=utils.hash(reset_password), is_verified=True),
         )
         return Token(access_token=session_found.token, token_type="bearer")
+
+    def get_user_membership_info_by_token(self, db: Session, token: str) -> UserSubscriptionPlan:
+        current_user = oauth2.get_current_user(db=db, token=token)
+        return self.__membership_service.get_user_membership_by_user_id(
+            db=db,
+            user_id=current_user.id
+        )
