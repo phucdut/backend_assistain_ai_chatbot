@@ -1,32 +1,34 @@
 import asyncio
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Union
+from urllib.parse import urlencode
 
-from fastapi import HTTPException, Response, status
+from fastapi import Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 from starlette.requests import Request
 
-from app.common import utils
+from app.common import generate, utils
 from app.common.generate import generate_random_string
 from app.common.logger import setup_logger
 from app.core import google_auth, oauth2
-from app.schemas.session import SessionCreate, SessionUpdate
+from app.core.config import settings
+from app.schemas.auth import ChangePassword, Email
 from app.schemas.token import Token
 from app.schemas.user import (UserCreate, UserInDB, UserOut, UserSignIn,
                               UserSignInWithGoogle, UserSignUp, UserUpdate)
-from app.schemas.user_subscription import UserSubscriptionCreate
-from app.schemas.user_subscription_plan import UserSubscriptionPlan
+from app.schemas.user_session import UserSessionCreate, UserSessionUpdate
 from app.services.auth_service import AuthService
+from app.services.email_service import EmailService
 from app.services.email_service_impl import EmailServiceImpl
+from app.services.membership_service import MembershipService
 from app.services.membership_service_impl import MembershipServiceImpl
-from app.services.session_service_impl import SessionServiceImpl
-from app.services.subscription_plan_service_impl import \
-    SubscriptionPlanServiceImpl
+from app.services.user_service import UserService
 from app.services.user_service_impl import UserServiceImpl
-from app.services.user_subscription_service_impl import \
-    UserSubscriptionServiceImpl
+from app.services.user_session_service import UserSessionService
+from app.services.user_session_service_impl import UserSessionServiceImpl
 
 logger = setup_logger()
 
@@ -34,31 +36,50 @@ logger = setup_logger()
 class AuthServiceImpl(AuthService):
 
     def __init__(self) -> None:
-        self.__user_service = UserServiceImpl()
-        self.__session_service = SessionServiceImpl()
-        self.__email_service = EmailServiceImpl()
-        self.__user_subscription_service = UserSubscriptionServiceImpl()
-        self.__subscription_plan_service = SubscriptionPlanServiceImpl()
-        self.__membership_service = MembershipServiceImpl()
+        self.__user_service: UserService = UserServiceImpl()
+        self.__user_session_service: UserSessionService = UserSessionServiceImpl()
+        self.__email_service: EmailService = EmailServiceImpl()
+        self.__membership_service: MembershipService = MembershipServiceImpl()
 
-    def sign_up(self, db: Session, user: UserSignUp) -> UserOut:
+    async def sign_up(self, db: Session, user: UserSignUp):
         hashed_password = utils.hash(user.password)
-        new_user = self.__user_service.create(
-            db=db,
-            user=UserCreate(
-                email=user.email,
-                password_hash=hashed_password,
-                is_active=True,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-                deleted_at=None,
-            ),
+
+        # Check original email
+        is_sended = await self.__email_service.send_verification_email(
+            user_info={"email": user.email, "name": user.email},
+            redirect_url=f"{settings.REDIRECT_FRONTEND_URL}/"
         )
+        # logger.warning(f"Email sended: {is_sended}")
+        if is_sended:
+            try:
+                new_user = self.__user_service.create(
+                    db=db,
+                    user=UserCreate(
+                        email=user.email,
+                        password_hash=hashed_password,
+                        is_active=True,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        deleted_at=None,
+                    ),
+                )
+            except Exception as e:
+                if "User already exists" in str(e):
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="User already exists")
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email not sended"
+            )
+
         self.__membership_service.create_default_subscription(db, new_user)
+
         return new_user
 
     def sign_in(self, db: Session, user_credentials: UserSignIn) -> Token:
-        user_found: UserInDB = self.__user_service.get_one_with_filter_or_none(
+        user_found: UserInDB = self.__user_service.get_one_with_filter_or_none_db(
             db=db, filter={"email": user_credentials.email}
         )
         if user_found is None:
@@ -66,8 +87,8 @@ class AuthServiceImpl(AuthService):
                 f"Exception in {__name__}.{self.__class__.__name__}.sign_in: User not found: {user_credentials.email}"
             )
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail=f"Invalid Credentials"
-            )
+                status_code=status.HTTP_403_FORBIDDEN, detail=f"User not found")
+
         if not utils.verify(user_credentials.password, user_found.password_hash):
             logger.exception(
                 f"Exception in {__name__}.{self.__class__.__name__}.sign_in: Invalid password: {user_credentials.email}"
@@ -78,9 +99,9 @@ class AuthServiceImpl(AuthService):
         access_token: str = oauth2.create_access_token(
             data={"user_id": str(user_found.id)}
         )
-        token_data = self.__session_service.create(
+        user_session_created = self.__user_session_service.create(
             db=db,
-            session=SessionCreate(
+            session=UserSessionCreate(
                 token=access_token,
                 user_id=user_found.id,
                 is_active=True,
@@ -90,7 +111,7 @@ class AuthServiceImpl(AuthService):
                 expires_at=utils.get_expires_at(),
             ),
         )
-        return Token(access_token=token_data.token, token_type="bearer")
+        return Token(access_token=user_session_created.token, token_type="bearer")
 
     def verify_user(self, db: Session, token: str) -> Token:
         current_user = oauth2.get_current_user(db=db, token=token)
@@ -99,22 +120,24 @@ class AuthServiceImpl(AuthService):
             db=db,
             email=current_user.email,
         )
-        session_updated = self.__session_service.update_one_with_filter(
+        user_session_updated = self.__user_session_service.update_one_with_filter(
             db=db,
             filter={"token": token},
-            session=SessionUpdate(
+            session=UserSessionUpdate(
                 token=token,
                 expires_at=utils.get_expires_at(),
                 updated_at=datetime.now(),
             ),
         )
-        return Token(access_token=session_updated.token, token_type="bearer")
+        return RedirectResponse(
+                    url=f"{settings.REDIRECT_FRONTEND_URL}/home?token={user_session_updated.token}"
+                )
 
     def create_session(self, db: Session, user_id: uuid.UUID):
         access_token = oauth2.create_access_token(data={"user_id": str(user_id)})
-        session_created = self.__session_service.create(
+        user_session_created = self.__user_session_service.create(
             db=db,
-            session=SessionCreate(
+            session=UserSessionCreate(
                 token=access_token,
                 user_id=user_id,
                 is_active=True,
@@ -124,7 +147,7 @@ class AuthServiceImpl(AuthService):
                 expires_at=utils.get_expires_at(),
             ),
         )
-        return session_created
+        return user_session_created
 
     async def handle_google_callback(self, request: Request, db: Session):
         token = None
@@ -155,13 +178,22 @@ class AuthServiceImpl(AuthService):
             if user_found is not None:
                 session_created = self.create_session(db, user_found.id)
                 if not user_found.is_verified:
-                    await self.__email_service.send_verification_email(
-                        user_info, session_created.token
+                    is_sended = await self.__email_service.send_verification_email(
+                        user_info=user_info,
+                        redirect_url=f"{settings.REDIRECT_BACKEND_URL}/api/v1/auth/verification?token={session_created.token}"
                     )
+                    if is_sended:
+                        return RedirectResponse(
+                        url=f"{settings.REDIRECT_FRONTEND_URL}/success"
+                        )
                     return RedirectResponse(
-                        url="https://raw.githubusercontent.com/DNAnh01/assets/main/02.1.%20Sign%20up%20-%20Success.png"
-                    )
-                return Token(access_token=session_created.token, token_type="bearer")
+                        url=f"{settings.REDIRECT_FRONTEND_URL}/error"
+                        )
+                
+                return RedirectResponse(
+                    url=f"{settings.REDIRECT_FRONTEND_URL}/home?token={session_created.token}"
+                )
+
             else:
                 user_created_with_google = UserSignInWithGoogle(
                     email=user_info["email"],
@@ -181,35 +213,41 @@ class AuthServiceImpl(AuthService):
                 )
 
                 self.__membership_service.create_default_subscription(db, new_user)
-                
+
                 session_created = self.create_session(db, new_user.id)
 
-                await self.__email_service.send_verification_email(
-                    user_info, session_created.token
+                is_sended = await self.__email_service.send_verification_email(
+                        user_info=user_info,
+                        redirect_url=f"{settings.REDIRECT_BACKEND_URL}/api/v1/auth/verification?token={session_created.token}"
                 )
+                if is_sended:
+                    return RedirectResponse(
+                        url=f"{settings.REDIRECT_FRONTEND_URL}/success"
+                    )
                 return RedirectResponse(
-                    url="https://raw.githubusercontent.com/DNAnh01/assets/main/02.1.%20Sign%20up%20-%20Success.png"
+                    url=f"{settings.REDIRECT_FRONTEND_URL}/error"
                 )
-
-    def sign_out(self, db: Session, token: str) -> Response:
+            
+            
+    def sign_out(self, db: Session, get_current_user: UserOut):
         try:
-            self.__session_service.remove_one_with_filter(
-                db=db, filter={"token": token}
+            self.__user_session_service.remove_one_with_filter(
+                db=db, filter={"user_id": get_current_user.id}
             )
             return JSONResponse(
                 status_code=200, content={"message": "Sign out successful"}
             )
         except NoResultFound:
             logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.sign_out: Invalid token: {token}"
+                f"Exception in {__name__}.{self.__class__.__name__}.sign_out: User not found: {get_current_user.id}"
             ),
             raise HTTPException(
-                detail="Sign out failed: Invalid token",
+                detail="Sign out failed", status_code=400
             )
 
-    async def forgot_password(self, db: Session, email: str) -> Response:
+    async def forgot_password(self, db: Session, email: Email):
         user_found = self.__user_service.get_one_with_filter_or_none(
-            db=db, filter={"email": email}
+            db=db, filter={"email": email.email}
         )
 
         if user_found is None:
@@ -218,39 +256,52 @@ class AuthServiceImpl(AuthService):
             )
             raise HTTPException(status_code=400, detail="User not found")
 
-        session_created = self.create_session(db=db, user_id=user_found.id)
-        await self.__email_service.send_reset_password_email(
-            email=user_found.email, token=session_created.token, db=db
+        password_reset = generate.generate_random_string(6)
+        user_updated = self.__user_service.update_one_with_filter(
+            db=db,
+            filter={"id": user_found.id},
+            user=UserUpdate(email=email.email,
+                            display_name=user_found.display_name,
+                            avatar_url=user_found.avatar_url,
+                            password_hash=utils.hash(password_reset),
+                            updated_at=datetime.now()
+                            ),
         )
-        return {"message": "Reset password email sent"}
+        logger.warning(f"user_updated: {user_updated}")
+        if user_updated is not None:
+            id_sended = await self.__email_service.send_reset_password_email(
+                email=user_found.email, password_reset=password_reset, db=db
+            )
+            if id_sended:
+                return RedirectResponse(
+                    url=f"{settings.REDIRECT_FRONTEND_URL}/success"
+                )
+            return RedirectResponse(
+                url=f"{settings.REDIRECT_FRONTEND_URL}/error"
+            )
 
-    async def reset_password(self, db: Session, token: str) -> Token:
-        session_found = self.__session_service.get_one_with_filter_or_none(
-            db=db, filter={"token": token}
-        )
 
+    async def change_password(self, db: Session, get_current_user: UserOut, password: ChangePassword):
         user_found = self.__user_service.get_one_with_filter_or_none(
-            db=db, filter={"id": session_found.user_id}
+            db=db, filter={"id": get_current_user.id}
         )
-
         if user_found is None:
             logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.reset_password: User not found: {token}"
+                f"Exception in {__name__}.{self.__class__.__name__}.reset_password: User not found"
             )
             raise HTTPException(status_code=400, detail="User not found")
 
-        reset_password = generate_random_string(32)
-
-        self.__user_service.update_one_with_filter(
+        try:
+            self.__user_service.update_one_with_filter(
             db=db,
-            filter={"id": user_found.id},
-            user=UserUpdate(password_hash=utils.hash(reset_password), is_verified=True),
-        )
-        return Token(access_token=session_found.token, token_type="bearer")
-
-    def get_user_membership_info_by_token(self, db: Session, token: str) -> UserSubscriptionPlan:
-        current_user = oauth2.get_current_user(db=db, token=token)
-        return self.__membership_service.get_user_membership_by_user_id(
-            db=db,
-            user_id=current_user.id
+            filter={"password_hash": utils.hash(password.password_old), "id": get_current_user.id},
+            user=UserUpdate(password_hash=utils.hash(password.password_new)),
+            )
+        except Exception as e:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.change_password: {e}"
+            )
+            raise HTTPException(status_code=400, detail="Password not changed")
+        return JSONResponse(
+            status_code=200, content={"message": "Password changed successfully"}
         )

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.common.logger import setup_logger
@@ -10,8 +10,10 @@ from app.schemas.user import UserOut
 from app.schemas.user_subscription import UserSubscriptionCreate
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
 from app.services.membership_service import MembershipService
+from app.services.subscription_plan_service import SubscriptionPlanService
 from app.services.subscription_plan_service_impl import \
     SubscriptionPlanServiceImpl
+from app.services.user_subscription_service import UserSubscriptionService
 from app.services.user_subscription_service_impl import \
     UserSubscriptionServiceImpl
 
@@ -20,9 +22,9 @@ logger = setup_logger()
 
 class MembershipServiceImpl(MembershipService):
     def __init__(self):
-        self.__subscription_plan_service = SubscriptionPlanServiceImpl()
-        self.__user_subscription_service = UserSubscriptionServiceImpl()
         self.__crud_user_subscription_plan = crud_user_subscription_plan
+        self.__subscription_plan_service: SubscriptionPlanService = SubscriptionPlanServiceImpl()
+        self.__user_subscription_service: UserSubscriptionService = UserSubscriptionServiceImpl()
 
     def create_default_subscription(self, db: Session, new_user: UserOut):
         default_plan = self.__subscription_plan_service.get_one_with_filter_or_none(
@@ -48,8 +50,9 @@ class MembershipServiceImpl(MembershipService):
             ),
         )
 
-    def get_user_membership_by_user_id(self, db: Session, user_id: uuid.UUID) -> UserSubscriptionPlan:
+    def get_user_membership_by_user_id(
+        self, db: Session, user_id: uuid.UUID
+    ) -> UserSubscriptionPlan:
         return self.__crud_user_subscription_plan.get_user_membership_info(
-            db=db,
-            user_id=user_id
+            db=db, user_id=user_id
         )

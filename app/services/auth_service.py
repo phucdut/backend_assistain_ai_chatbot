@@ -1,18 +1,19 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 from fastapi import Response
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 
+from app.schemas.auth import ChangePassword, Email
 from app.schemas.token import Token
 from app.schemas.user import UserOut, UserSignIn, UserSignUp
-from app.schemas.user_subscription_plan import UserSubscriptionPlan
 
 
 class AuthService(ABC):
 
     @abstractmethod
-    def sign_up(self, db: Session, user: UserSignUp) -> UserOut:
+    async def sign_up(self, db: Session, user: UserSignUp):
         pass
 
     @abstractmethod
@@ -32,19 +33,12 @@ class AuthService(ABC):
         pass
 
     @abstractmethod
-    def sign_out(self, db: Session, token: str) -> Response:
+    def sign_out(self, db: Session, get_current_user: UserOut):
         pass
 
     @abstractmethod
-    async def forgot_password(self, db: Session, email: str) -> Response:
+    async def forgot_password(self, db: Session, email: Email):
         pass
-
     @abstractmethod
-    async def reset_password(self, db: Session, token: str) -> Token:
+    async def change_password(self, db: Session, get_current_user: UserOut, password: ChangePassword):
         pass
-
-    @abstractmethod
-    def get_user_membership_info_by_token(self, db: Session, token: str) -> UserSubscriptionPlan:
-        pass
-
-

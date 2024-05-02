@@ -13,5 +13,7 @@ class MembershipService(ABC):
         pass
 
     @abstractmethod
-    def get_user_membership_by_user_id(self, db: Session, user_id: uuid.UUID) -> UserSubscriptionPlan:
+    def get_user_membership_by_user_id(
+        self, db: Session, user_id: uuid.UUID
+    ) -> UserSubscriptionPlan:
         pass

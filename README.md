@@ -1,5 +1,9 @@
 ### Welcome everyone, this is the AI Assistant Chatbot project
 
+##### ERD of the project
+
+<img src="./docs//database_diagrams/v5_Ally_database_diagram.png" height="" width="">
+
 #### To start participating in the project, there are a few things to note:
 
 ##### 1. Everyone participating in this project should code according to the [Gitflow Workflow](https://viblo.asia/p/co-ban-ve-gitflow-workflow-4dbZNn6yZYM)
@@ -10,37 +14,14 @@
 
 ##### 3. Create a new virtual environment, install the necessary libraries, and run the project
 
-###### `Create a new virtual environment`
+###### `Create a new virtual environment and install the necessary libraries`
 
 ```terminal
 conda create --name new_env_name python=3.9.6
 
 conda activate new_env_name
 
-```
-
-###### `Can view list conda virtual environment`
-
-```terminal
-conda env list
-```
-
-###### `Create a new project fastapi`
-
-```terminal
-mkdir Your-Project-Name
-
-cd Your-Project-Name
-
-python -m pip install fastapi
-
-pip install "uvicorn[standard]"
-```
-
-###### `Install the necessary libraries`
-
-```terminal
-pip install -r requirements.txt
+conda install --file requirements.txt
 ```
 
 ###### `Run the project`
@@ -49,7 +30,7 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-##### 4. Project directory structure
+##### 5. Project directory structure
 
 ```
 📦Your-Project-Name
