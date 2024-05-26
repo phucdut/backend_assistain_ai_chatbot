@@ -32,3 +32,4 @@ class UserSessionService(ABC):
     @abstractmethod
     def remove_one_with_filter(self, db: Session, filter: dict) -> UserSessionOut:
         pass
+
