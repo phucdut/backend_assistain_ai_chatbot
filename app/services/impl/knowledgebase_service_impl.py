@@ -122,21 +122,6 @@ class KnowledgeBaseServiceImpl(KnowledgeBaseService):
         knowledge_base_id: str,
         # current_user_membership: UserSubscriptionPlan,
     ):
-        # if (
-        #     "delete_knowledge_base"
-        #     not in current_user_membership.u_list_permission_name
-        # ):
-        #     logger.exception(
-        #         f"Exception in {__name__}.{self.__class__.__name__}.remove_knowledge_base: User does not have permission to delete knowledge base"
-        #     )
-        #     return JSONResponse(
-        #         status_code=400,
-        #         content={
-        #             "status": 400,
-        #             "message": "Remove knowledge base failed: User does not have permission to delete knowledge base"
-        #         },
-        #     )
-
         try:
             knowledge_base_found = self.__crud_knowledgeBase.get_one_by(
                 db=db, filter={"id": knowledge_base_id, "chatbot_id": chatbot_id}

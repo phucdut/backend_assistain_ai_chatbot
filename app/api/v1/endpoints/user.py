@@ -10,23 +10,33 @@ from app.schemas.user_subscription_plan import UserSubscriptionPlan
 
 from app.services.abc.user_service import UserService
 from app.services.impl.user_service_impl import UserServiceImpl
-from app.schemas.user import (UserCreate, UserInDB, UserOut,
-                              UserSignInWithGoogle, UserUpdate)
+from app.schemas.user import (
+    UserCreate,
+    UserInDB,
+    UserOut,
+    UserSignInWithGoogle,
+    UserUpdate,
+    UpdatePassword,
+)
 
 
 router = APIRouter()
 
 user_service = UserServiceImpl()
 
+
 @router.get("/profile", response_model=UserOut, status_code=status.HTTP_200_OK)
 def get_profile(
-    current_user_membership: UserSubscriptionPlan = Depends(oauth2.get_current_user_membership_info_by_token),
-    db: Session = Depends(deps.get_db)
+    current_user_membership: UserSubscriptionPlan = Depends(
+        oauth2.get_current_user_membership_info_by_token
+    ),
+    db: Session = Depends(deps.get_db),
 ):
     user = user_service.get_profile(
         db=db, current_user_membership=current_user_membership
     )
     return user
+
 
 @router.put(
     "/edit/{user_id}",
@@ -48,3 +58,17 @@ def update(
         filter={"id": user_id},
     )
     return updated_user
+
+
+@router.post("/{user_id}/change-password")
+async def change_password(
+    change_password: UpdatePassword,
+    user_id: str,
+    current_user_membership: UserSubscriptionPlan = Depends(
+        oauth2.get_current_user_membership_info_by_token
+    ),
+    db: Session = Depends(deps.get_db),
+):
+    return await user_service.change_password(
+        db=db, current_user_membership=current_user_membership, user_id=user_id, password=change_password
+    )

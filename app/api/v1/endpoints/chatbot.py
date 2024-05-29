@@ -45,10 +45,13 @@ from app.schemas.chatbot import (
 
 
 @router.post(
-    "/", status_code=status.HTTP_201_CREATED, response_model=ChatBotOut
+    "/{user_id}/create",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ChatBotOut,
 )
 def create(
     chatbot_create: ChatBotCreate,
+    user_id: str,
     current_user_membership: UserSubscriptionPlan = Depends(
         oauth2.get_current_user_membership_info_by_token
     ),
@@ -58,6 +61,7 @@ def create(
         db=db,
         chatbot_create=chatbot_create,
         current_user_membership=current_user_membership,
+        user_id=user_id,
     )
     return chatbot_created
 
@@ -87,7 +91,7 @@ def get_all(
     ),
     db: Session = Depends(deps.get_db),
 ):
-    chatbots = chatbot_service.get_all_or_none(db=db, user_id=user_id)
+    chatbots = chatbot_service.get_all(db=db, user_id=user_id)
     return chatbots
 
 
@@ -134,19 +138,20 @@ def update(
 
 
 @router.delete(
-    "/delete/{chatbot_id}",
+    "/{user_id}/delete/{chatbot_id}",
     status_code=status.HTTP_200_OK,
-    response_model=ChatBotInDB,
 )
 def delete(
+    user_id: str,
     chatbot_id: str,
     current_user_membership: UserSubscriptionPlan = Depends(
         oauth2.get_current_user_membership_info_by_token
     ),
     db: Session = Depends(deps.get_db),
-) -> ChatBotInDB:
+):
     return chatbot_service.delete(
         db=db,
+        user_id=user_id,
         chatbot_id=chatbot_id,
         current_user_membership=current_user_membership,
     )

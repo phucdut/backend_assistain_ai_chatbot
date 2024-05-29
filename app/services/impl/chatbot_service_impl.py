@@ -75,21 +75,22 @@ class ChatBotServiceImpl(ChatBotService):
         self,
         db: Session,
         chatbot_create: ChatBotCreate,
+        user_id: str,
         current_user_membership: UserSubscriptionPlan,
     ) -> ChatBotOut:
         # logger.warning(f"{current_user_membership}")
         logger.warning(f"{current_user_membership}")
 
-        chatbots = self.get_all_or_none(
-            db=db, current_user_membership=current_user_membership
-        )
+        chatbots = self.get_all(db=db, user_id=user_id)
         if (
             chatbots is not None
-            and len(chatbots) >= current_user_membership.sp_number_of_chatbots
+            and chatbots["total"]
+            >= current_user_membership.sp_number_of_chatbots
         ):
             logger.exception(
                 f"Exception in {__name__}.{self.__class__.__name__}.create_chatbot: User has reached the limit of chatbots"
             )
+            logger.info(f"Current chatbots: {chatbots}")
             raise HTTPException(
                 detail="Create Chatbot failed: User has reached the limit of chatbots",
                 status_code=400,
@@ -113,20 +114,6 @@ class ChatBotServiceImpl(ChatBotService):
         if chatbot_created:
             result: ChatBotOut = ChatBotOut(**chatbot_created.__dict__)
         return result
-
-    # def get_all_or_none(
-    #     self, db: Session, current_user_membership: UserSubscriptionPlan
-    # ) -> Optional[List[ChatBotOut]]:
-    #     try:
-    #         results = self.__crud_chatbot.get_multi(
-    #             db=db, filter_param={"user_id": current_user_membership.u_id}
-    #         )
-    #         return results
-    #     except:
-    #         logger.exception(
-    #             f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
-    #         )
-    #         return None
 
     def get_one_with_filter_or_none(
         self, db: Session, filter: dict
@@ -168,9 +155,10 @@ class ChatBotServiceImpl(ChatBotService):
     def delete(
         self,
         db: Session,
+        user_id: str,
         chatbot_id: str,
         current_user_membership: UserSubscriptionPlan,
-    ) -> Optional[ChatBotInDB]:
+    ):
         # Chỉ cần xác minh rằng người dùng đã đăng nhập (current_user_membership tồn tại)
         if not current_user_membership:
             logger.exception(
@@ -181,26 +169,43 @@ class ChatBotServiceImpl(ChatBotService):
                 detail="Delete chatbot failed: User not authenticated",
             )
 
-        chatbot_found: Optional[ChatBotInDB] = self.get_one(
-            db=db, chatbot_id=chatbot_id
-        )
-
-        if not chatbot_found:
-            logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.delete: Chatbot not found"
-            )
-            raise HTTPException(status_code=404, detail="Chatbot not found")
-
         try:
-            chatbot_deleted: ChatBotInDB = self.__crud_chatbot.remove(
+            chatbot_found = self.__crud_chatbot.get_one_by(
+                db=db,
+                filter={"id": chatbot_id, "user_id": user_id},
+            )
+
+            if chatbot_found is None:
+                return JSONResponse(
+                    status_code=404,
+                    content={
+                        "status": 404,
+                        "message": "Chatbot not found",
+                    },
+                )
+
+            chatbot_deleted = self.__crud_chatbot.remove(
                 db=db, id=chatbot_found.id
             )
-            return chatbot_deleted
-        except Exception as e:
+        except:
             logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.delete: {str(e)}"
+                f"Exception in {__name__}.{self.__class__.__name__}.remove_chatbot"
             )
-            raise HTTPException(status_code=400, detail="Delete chatbot failed")
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "status": 400,
+                    "message": "Remove chatbot failed",
+                },
+            )
+        return {
+            "user_id": user_id,
+            "chatbot": {
+                "id": chatbot_deleted.id,
+                "chatbot_name": chatbot_deleted.chatbot_name,
+                "deleted_at": chatbot_deleted.deleted_at,
+            },
+        }
 
     def message(
         self,
@@ -292,14 +297,15 @@ class ChatBotServiceImpl(ChatBotService):
             traceback.print_exc()
             pass
 
-
-    def get_all_or_none(
+    def get_all(
         self,
         db: Session,
         user_id: str,
     ) -> Optional[List[ChatBotOut]]:
         try:
-            user_found = self.__crud_user.get_one_by(db=db, filter={"id": user_id})
+            user_found = self.__crud_user.get_one_by(
+                db=db, filter={"id": user_id}
+            )
             if user_found is None:
                 raise HTTPException(status_code=404, detail="Chatbot not found")
 
@@ -314,4 +320,23 @@ class ChatBotServiceImpl(ChatBotService):
             logger.exception(
                 f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
             )
-            raise HTTPException(status_code=400, detail="Get all chatbot failed")
+            raise HTTPException(
+                status_code=400, detail="Get all chatbot failed"
+            )
+
+    def get_all_or_none(
+        self,
+        db: Session,
+        current_user_membership: UserSubscriptionPlan,
+        user_id: str,
+    ) -> Optional[List[ChatBotOut]]:
+        try:
+            results = self.__crud_chatbot.get_multi(
+                db=db, filter_param={"user_id": current_user_membership.u_id}
+            )
+            return results
+        except:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
+            )
+            return None

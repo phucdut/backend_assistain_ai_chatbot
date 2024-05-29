@@ -3,9 +3,11 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from fastapi import Depends, HTTPException
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
 from app.common.logger import setup_logger
+from app.common import utils
 from app.crud.crud_user import crud_user
 from app.schemas.user import (
     UserCreate,
@@ -13,6 +15,7 @@ from app.schemas.user import (
     UserOut,
     UserSignInWithGoogle,
     UserUpdate,
+    UpdatePassword,
 )
 from app.services.abc.user_service import UserService
 
@@ -63,7 +66,7 @@ class UserServiceImpl(UserService):
             result: UserOut = UserOut(**user_found.__dict__)
             return result
         return None
-    
+
     def get_edit_one_with_filter_or_none(
         self, db: Session, filter: dict
     ) -> Optional[UserOut]:
@@ -174,3 +177,47 @@ class UserServiceImpl(UserService):
             result: UserOut = UserOut(**user_found.__dict__)
             return result
         return None
+
+    async def change_password(
+        self,
+        db: Session,
+        user_id: str,
+        current_user_membership: UserSubscriptionPlan,
+        password: UpdatePassword,
+    ):
+        user_found = self.__crud_user.get_one_by(
+            db=db, filter={"id": current_user_membership.u_id}
+        )
+        if user_found is None:
+            logger.error(
+                f"Error in {__name__}.{self.__class__.__name__}.change_password: User not found"
+            )
+            return JSONResponse(
+                status_code=404,
+                content={"status": 404, "message": "User not found"},
+            )
+        if not utils.verify(password.password_old, user_found.password_hash):
+            logger.error(
+                f"Error in {__name__}.{self.__class__.__name__}.change_password: Old password is incorrect"
+            )
+            return JSONResponse(
+                status_code=400,
+                content={"status": 400, "message": "Old password is incorrect"},
+            )
+        user_updated = self.__crud_user.update_one_by(
+            db=db,
+            filter={"id": current_user_membership.u_id},
+            obj_in={"password_hash": utils.hash(password.password_new)},
+        )
+        if user_updated is None:
+            logger.error(
+                f"Error in {__name__}.{self.__class__.__name__}.change_password: Change password failed"
+            )
+            return JSONResponse(
+                status_code=500,
+                content={"status": 500, "message": "Change password failed"},
+            )
+        return JSONResponse(
+            status_code=200,
+            content={"status": 200, "message": "Change password successful"},
+        )

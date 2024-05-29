@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List
+import csv
 
 import PyPDF2
 from passlib.context import CryptContext
@@ -100,3 +101,10 @@ def read_pdf(file_path):
             page = reader.pages[page_num]
             text += page.extract_text()
     return text
+
+def read_csv(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        next(reader)
+        for row in reader:
+            yield row

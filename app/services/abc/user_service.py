@@ -9,6 +9,7 @@ from app.schemas.user import (
     UserOut,
     UserSignInWithGoogle,
     UserUpdate,
+    UpdatePassword
 )
 
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
@@ -60,4 +61,10 @@ class UserService(ABC):
     def get_profile(
         self, db: Session, current_user_membership: UserSubscriptionPlan
     ) -> UserOut:
+        pass
+
+    @abstractmethod
+    async def change_password(
+        self, db: Session, current_user_membership: UserSubscriptionPlan, password: UpdatePassword, user_id=str
+    ):
         pass

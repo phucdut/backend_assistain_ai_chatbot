@@ -24,19 +24,20 @@ class ChatBotService(ABC):
     def create(
         self,
         db: Session,
+        user_id: str,
         chatbot_create: ChatBotCreate,
         current_user_membership: UserSubscriptionPlan,
     ) -> ChatBotOut:
         pass
 
-    # @abstractmethod
-    # def get_all_or_none(
-    #     self, db: Session, current_user_membership: UserSubscriptionPlan
-    # ) -> Optional[List[ChatBotOut]]:
-    #     pass
-
     @abstractmethod
     def get_all_or_none(
+        self, db: Session, current_user_membership: UserSubscriptionPlan
+    ) -> Optional[List[ChatBotOut]]:
+        pass
+
+    @abstractmethod
+    def get_all(
         self, db: Session, user_id: str
     ) -> Optional[List[ChatBotOut]]:
         pass
@@ -78,7 +79,8 @@ class ChatBotService(ABC):
     def delete(
         self,
         db: Session,
+        user_id: str,
         chatbot_id: str,
         current_user_membership: UserSubscriptionPlan,
-    ) -> Optional[ChatBotInDB]:
+    ):
         pass

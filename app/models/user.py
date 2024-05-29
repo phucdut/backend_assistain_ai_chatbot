@@ -16,7 +16,7 @@ class User(Base):
     avatar_url = Column(
         String,
         nullable=False,
-        default="https://raw.githubusercontent.com/DNAnh01/assets/main/default_user_avatar.png",
+        default="http://localhost:3000/Ellipse%201.svg",
     )
     payment_information = Column(String, nullable=True)
     is_verified = Column(Boolean, default=False, nullable=False)

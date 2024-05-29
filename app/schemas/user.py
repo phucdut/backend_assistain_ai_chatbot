@@ -76,3 +76,8 @@ class UserInDB(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: Optional[datetime]
+
+class UpdatePassword(UserBase):
+    password_old: str
+    password_new: str
+    
