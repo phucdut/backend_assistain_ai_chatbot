@@ -79,9 +79,8 @@ class ChatBotServiceImpl(ChatBotService):
         current_user_membership: UserSubscriptionPlan,
     ) -> ChatBotOut:
         # logger.warning(f"{current_user_membership}")
-        logger.warning(f"{current_user_membership}")
 
-        chatbots = self.get_all(db=db, user_id=user_id)
+        chatbots = self.get_all_or_none(db=db, user_id=user_id)
         if (
             chatbots is not None
             and chatbots["total"]
@@ -257,6 +256,67 @@ class ChatBotServiceImpl(ChatBotService):
             traceback.print_exc()
             pass
 
+    def message_with_auth(
+        self,
+        db: Session,
+        chatbot_id: str,
+        conversation_id: str,
+        message: str,
+        client_ip: str,
+        current_user_membership: UserSubscriptionPlan,
+    ) -> MessageOut:
+        # logger.warning(f"{current_user_membership}")
+        # Chỉ cần xác minh rằng người dùng đã đăng nhập (current_user_membership tồn tại)
+        if not current_user_membership:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.delete: User not authenticated"
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="Delete chatbot failed: User not authenticated",
+            )
+        try:
+            conversation = self.__conversation_service.check_conversation(
+                db=db,
+                conversation_id=conversation_id,
+                chatbot_id=chatbot_id,
+                client_ip=client_ip,
+            )
+            # Add message to Message
+            message_form = {
+                "sender_id": conversation.conversation_name,
+                "sender_type": "guest",
+                "message": message,
+                "conversation_id": conversation.id,
+            }
+            add_message = self.__crud_message_base.create(
+                db=db, obj_in=message_form
+            )
+            if conversation.is_taken == False:
+                # Handle auto response and add to Message
+                response, chatbot_id = self.handle_message(
+                    db=db,
+                    chatbot_id=chatbot_id,
+                    conversation_id=conversation_id,
+                    message=message,
+                )
+                message_form = {
+                    "sender_id": chatbot_id,
+                    "sender_type": "bot",
+                    "message": response,
+                    "conversation_id": conversation.id,
+                }
+                add_message = self.__crud_message_base.create(
+                    db=db, obj_in=message_form
+                )
+                return add_message
+            else:
+                # Handle manual response and add to Message
+                return add_message
+        except:
+            traceback.print_exc()
+            pass
+
     def handle_message(
         self, db: Session, chatbot_id: str, conversation_id: str, message: str
     ):
@@ -297,7 +357,7 @@ class ChatBotServiceImpl(ChatBotService):
             traceback.print_exc()
             pass
 
-    def get_all(
+    def get_all_or_none(
         self,
         db: Session,
         user_id: str,
@@ -323,20 +383,3 @@ class ChatBotServiceImpl(ChatBotService):
             raise HTTPException(
                 status_code=400, detail="Get all chatbot failed"
             )
-
-    def get_all_or_none(
-        self,
-        db: Session,
-        current_user_membership: UserSubscriptionPlan,
-        user_id: str,
-    ) -> Optional[List[ChatBotOut]]:
-        try:
-            results = self.__crud_chatbot.get_multi(
-                db=db, filter_param={"user_id": current_user_membership.u_id}
-            )
-            return results
-        except:
-            logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
-            )
-            return None

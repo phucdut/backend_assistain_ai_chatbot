@@ -22,11 +22,17 @@ from app.schemas.knowledge_base import (
     KnowledgeBaseRemove,
     KnowledgeBaseInDB,
 )
+from app.schemas.message import (
+    MessageCreate,
+    MessageOut,
+)
 from app.schemas.conversation import ConversationCreate, ConversationOut
-from app.schemas.user_subscription_plan import UserSubscriptionPlan
+from app.schemas.user_subscription_plan import UserSubscriptionPlan 
 from app.services.abc.chatbot_service import ChatBotService
+from app.services.abc.message_service import MessageService
 from app.services.abc.knowledgebase_service import KnowledgeBaseService
 from app.services.impl.chatbot_service_impl import ChatBotServiceImpl
+from app.services.impl.message_service_impl import MessageServiceImpl
 from app.services.impl.knowledgebase_service_impl import (
     KnowledgeBaseServiceImpl,
 )
@@ -34,6 +40,7 @@ from app.services.impl.conversation_service_impl import ConversationServiceImpl
 
 router = APIRouter()
 chatbot_service: ChatBotService = ChatBotServiceImpl()
+message_service: MessageService = MessageServiceImpl()
 conversation_service = ConversationServiceImpl()
 knowledgebase_service: KnowledgeBaseService = KnowledgeBaseServiceImpl()
 from app.schemas.chatbot import (
@@ -65,20 +72,6 @@ def create(
     )
     return chatbot_created
 
-
-# @router.get("/get-all", status_code=status.HTTP_200_OK)
-# def get_all(
-#     current_user_membership: UserSubscriptionPlan = Depends(
-#         oauth2.get_current_user_membership_info_by_token
-#     ),
-#     db: Session = Depends(deps.get_db),
-# ):
-#     chatbots = chatbot_service.get_all_or_none(
-#         db=db, current_user_membership=current_user_membership
-#     )
-#     return chatbots
-
-
 @router.get(
     "/{user_id}/get-all-chatbot",
     status_code=status.HTTP_200_OK,
@@ -91,7 +84,7 @@ def get_all(
     ),
     db: Session = Depends(deps.get_db),
 ):
-    chatbots = chatbot_service.get_all(db=db, user_id=user_id)
+    chatbots = chatbot_service.get_all_or_none(db=db, user_id=user_id)
     return chatbots
 
 
@@ -213,13 +206,13 @@ def delete(
     )
 
 
-@router.post("/{chatbot_id}/message", status_code=status.HTTP_200_OK)
+@router.post("/{chatbot_id}/message/{conversation_id}", status_code=status.HTTP_200_OK)
 def message_chatbot(
     chatbot_id: str,
     message: dict,
     request: Request,
+    conversation_id: str,
     db: Session = Depends(deps.get_db),
-    conversation_id: str = Cookie(None),
 ):
     # client_ip = request.client.host
     # client_ip = request.client.host
@@ -230,6 +223,30 @@ def message_chatbot(
         conversation_id=conversation_id,
         message=message["message"],
         client_ip=client_ip,
+    )
+    return response
+
+@router.post("/{chatbot_id}/message/{conversation_id}/with-auth", status_code=status.HTTP_200_OK)
+def message_chatbot(
+    chatbot_id: str,
+    message: dict,
+    request: Request,
+    conversation_id: str,
+    db: Session = Depends(deps.get_db),
+    current_user_membership: UserSubscriptionPlan = Depends(
+        oauth2.get_current_user_membership_info_by_token
+    ),
+):
+    # client_ip = request.client.host
+    # client_ip = request.client.host
+    client_ip = "42.118.119.124"
+    response = chatbot_service.message_with_auth(
+        db=db,
+        chatbot_id=chatbot_id,
+        conversation_id=conversation_id,
+        message=message["message"],
+        client_ip=client_ip,
+        current_user_membership=current_user_membership,
     )
     return response
 
