@@ -32,12 +32,6 @@ class ChatBotService(ABC):
 
     @abstractmethod
     def get_all_or_none(
-        self, db: Session, current_user_membership: UserSubscriptionPlan
-    ) -> Optional[List[ChatBotOut]]:
-        pass
-
-    @abstractmethod
-    def get_all(
         self, db: Session, user_id: str
     ) -> Optional[List[ChatBotOut]]:
         pass
@@ -66,6 +60,18 @@ class ChatBotService(ABC):
         conversation_id: str,
         message: str,
         client_ip: str,
+    ) -> MessageOut:
+        pass
+
+    @abstractmethod
+    def message_with_auth(
+        self,
+        db: Session,
+        chatbot_id: str,
+        conversation_id: str,
+        message: str,
+        client_ip: str,
+        current_user_membership: UserSubscriptionPlan,
     ) -> MessageOut:
         pass
 
