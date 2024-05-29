@@ -3,10 +3,16 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from app.schemas.user import (UserCreate, UserInDB, UserOut,
-                              UserSignInWithGoogle, UserUpdate)
+from app.schemas.user import (
+    UserCreate,
+    UserInDB,
+    UserOut,
+    UserSignInWithGoogle,
+    UserUpdate,
+)
 
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
+
 
 class UserService(ABC):
 
@@ -32,7 +38,11 @@ class UserService(ABC):
 
     @abstractmethod
     def update_one_with_filter(
-        self, db: Session, filter: dict, user: UserUpdate
+        self,
+        db: Session,
+        user_update: UserUpdate,
+        current_user_membership: UserSubscriptionPlan,
+        filter: dict,
     ) -> UserOut:
         pass
 
@@ -45,8 +55,9 @@ class UserService(ABC):
     @abstractmethod
     def update_is_verified(self, db: Session, email: str) -> UserOut:
         pass
-    
-    @abstractmethod
-    def get_profile(self, db: Session, current_user_membership: UserSubscriptionPlan) -> UserOut:
-        pass 
 
+    @abstractmethod
+    def get_profile(
+        self, db: Session, current_user_membership: UserSubscriptionPlan
+    ) -> UserOut:
+        pass

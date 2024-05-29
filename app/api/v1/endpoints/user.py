@@ -27,3 +27,24 @@ def get_profile(
         db=db, current_user_membership=current_user_membership
     )
     return user
+
+@router.put(
+    "/edit/{user_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UserOut,
+)
+def update(
+    user_id: str,
+    user_update: UserUpdate,
+    current_user_membership: UserSubscriptionPlan = Depends(
+        oauth2.get_current_user_membership_info_by_token
+    ),
+    db: Session = Depends(deps.get_db),
+) -> UserOut:
+    updated_user = user_service.update_one_with_filter(
+        db=db,
+        user_update=user_update,
+        current_user_membership=current_user_membership,
+        filter={"id": user_id},
+    )
+    return updated_user

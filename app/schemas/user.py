@@ -36,23 +36,23 @@ class UserSignInWithGoogle(UserBase):
 
 
 class UserUpdate(UserBase):
-    password_hash: Optional[str]
-    display_name: Optional[str]
-    avatar_url: Optional[str]
-    is_verified: Optional[bool]
-    user_role: Optional[str]
+    password_hash: Optional[str] = None
+    display_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    is_verified: Optional[bool] = None
+    user_role: Optional[str] = None
 
-    updated_at: Optional[datetime]
+    updated_at: Optional[datetime] = None
 
 
-class UserOut(BaseModel):
+class UserOut(UserBase):
     id: uuid.UUID
     email: EmailStr
     display_name: str
     avatar_url: str
     payment_information: Optional[str]
     is_verified: bool
-    user_role: str
+    user_role: str  
     is_active: bool
     created_at: datetime
     updated_at: datetime

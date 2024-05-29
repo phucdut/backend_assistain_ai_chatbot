@@ -2,6 +2,10 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 
+from app.schemas.auth import (
+    EmailSchema,
+)
+
 from app.api import deps
 from app.core import oauth2
 from app.core.google_auth import oauth
@@ -15,10 +19,11 @@ router = APIRouter()
 auth_service: AuthService = AuthServiceImpl()
 
 
-@router.post("/sign-up", status_code=status.HTTP_201_CREATED, response_model=UserOut)
+@router.post(
+    "/sign-up", status_code=status.HTTP_201_CREATED, response_model=UserOut
+)
 async def sign_up(
-    user: UserSignUp,
-    db: Session = Depends(deps.get_db)
+    user: UserSignUp, db: Session = Depends(deps.get_db)
 ) -> UserOut:
     return await auth_service.sign_up(db=db, user=user)
 
@@ -61,9 +66,9 @@ def sign_out(
     return auth_service.sign_out(db=db, get_current_user=get_current_user)
 
 
-@router.post("/forgot-password")
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
 async def forgot_password(
-    email: Email,
+    email: EmailSchema,
     db: Session = Depends(deps.get_db),
 ):
     return await auth_service.forgot_password(db=db, email=email)
@@ -75,4 +80,6 @@ async def change_password(
     get_current_user: UserOut = Depends(oauth2.get_current_user),
     db: Session = Depends(deps.get_db),
 ):
-    return await auth_service.change_password(db=db, get_current_user=get_current_user, password=password)
+    return await auth_service.change_password(
+        db=db, get_current_user=get_current_user, password=password
+    )

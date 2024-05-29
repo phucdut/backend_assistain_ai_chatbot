@@ -188,7 +188,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def update_one_by_id(
         self,
         db: Session,
-        id: uuid.UUID,
+        id: uuid.UUID, 
         obj_in: Union[UpdateSchemaType, Dict[str, Any]] = "{}",
     ) -> Optional[ModelType]:
         model = (

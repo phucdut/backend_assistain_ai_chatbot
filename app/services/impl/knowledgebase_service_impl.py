@@ -20,6 +20,8 @@ from app.schemas.knowledge_base import (
     KnowledgeBaseRemove,
 )
 from app.services.abc.knowledgebase_service import KnowledgeBaseService
+from app.schemas.user_subscription_plan import UserSubscriptionPlan
+
 
 logger = setup_logger()
 
@@ -112,3 +114,62 @@ class KnowledgeBaseServiceImpl(KnowledgeBaseService):
             raise HTTPException(
                 status_code=400, detail="Get all knowledge base failed"
             )
+        
+    def delete(
+        self,
+        db: Session,
+        chatbot_id: str,
+        knowledge_base_id: str,
+        # current_user_membership: UserSubscriptionPlan,
+    ):
+        # if (
+        #     "delete_knowledge_base"
+        #     not in current_user_membership.u_list_permission_name
+        # ):
+        #     logger.exception(
+        #         f"Exception in {__name__}.{self.__class__.__name__}.remove_knowledge_base: User does not have permission to delete knowledge base"
+        #     )
+        #     return JSONResponse(
+        #         status_code=400,
+        #         content={
+        #             "status": 400,
+        #             "message": "Remove knowledge base failed: User does not have permission to delete knowledge base"
+        #         },
+        #     )
+
+        try:
+            knowledge_base_found = self.__crud_knowledgeBase.get_one_by(
+                db=db, filter={"id": knowledge_base_id, "chatbot_id": chatbot_id}
+            )
+
+            if knowledge_base_found is None:
+                return JSONResponse(
+                    status_code=404, 
+                    content={
+                        "status": 404,
+                        "message": "Knowledge base not found"
+                    }
+                )
+
+            knowledge_base_deleted = self.__crud_knowledgeBase.remove(
+                db=db, id=knowledge_base_found.id
+            )
+        except:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.remove_knowledge_base"
+            )
+            return JSONResponse(
+                status_code=400, 
+                content={
+                    "status": 400,
+                    "message": "Remove knowledge base failed"
+                }
+            )
+        return {
+            "chatbot_id": chatbot_id,
+            "knowledge_base": {
+                "id": knowledge_base_deleted.id,
+                "knowledge_base_name": knowledge_base_deleted.title,
+                "deleted_at": knowledge_base_deleted.deleted_at,
+            },
+        }

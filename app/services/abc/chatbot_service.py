@@ -29,9 +29,15 @@ class ChatBotService(ABC):
     ) -> ChatBotOut:
         pass
 
+    # @abstractmethod
+    # def get_all_or_none(
+    #     self, db: Session, current_user_membership: UserSubscriptionPlan
+    # ) -> Optional[List[ChatBotOut]]:
+    #     pass
+
     @abstractmethod
     def get_all_or_none(
-        self, db: Session, current_user_membership: UserSubscriptionPlan
+        self, db: Session, user_id: str
     ) -> Optional[List[ChatBotOut]]:
         pass
 

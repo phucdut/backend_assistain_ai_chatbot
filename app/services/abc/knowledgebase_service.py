@@ -10,6 +10,7 @@ from app.schemas.knowledge_base import (
 )
 
 from app.schemas.knowledge_base import KnowledgeBaseOut
+from app.schemas.user_subscription_plan import UserSubscriptionPlan
 
 
 class KnowledgeBaseService(ABC):
@@ -29,4 +30,14 @@ class KnowledgeBaseService(ABC):
         db: Session,
         chatbot_id: str,
     ) -> Optional[List[KnowledgeBaseInDB]]:
+        pass
+
+    @abstractmethod
+    def delete(
+        self,
+        db: Session,
+        chatbot_id: str,
+        knowledge_base_id: str,
+        # current_user_membership: UserSubscriptionPlan,
+    ):
         pass

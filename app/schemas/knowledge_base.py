@@ -40,6 +40,7 @@ class KnowledgeBaseOut(KnowledgeBaseBase):
 
 
 class KnowledgeBaseInDB(KnowledgeBaseBase):
+    id: uuid.UUID
     title: str
     content_type: str
     file_path: str

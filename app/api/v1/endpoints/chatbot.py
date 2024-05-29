@@ -62,16 +62,32 @@ def create(
     return chatbot_created
 
 
-@router.get("/get-all", status_code=status.HTTP_200_OK)
+# @router.get("/get-all", status_code=status.HTTP_200_OK)
+# def get_all(
+#     current_user_membership: UserSubscriptionPlan = Depends(
+#         oauth2.get_current_user_membership_info_by_token
+#     ),
+#     db: Session = Depends(deps.get_db),
+# ):
+#     chatbots = chatbot_service.get_all_or_none(
+#         db=db, current_user_membership=current_user_membership
+#     )
+#     return chatbots
+
+
+@router.get(
+    "/{user_id}/get-all-chatbot",
+    status_code=status.HTTP_200_OK,
+    # response_model=Optional[List[ChatBotOut]],
+)
 def get_all(
+    user_id: str,
     current_user_membership: UserSubscriptionPlan = Depends(
         oauth2.get_current_user_membership_info_by_token
     ),
     db: Session = Depends(deps.get_db),
 ):
-    chatbots = chatbot_service.get_all_or_none(
-        db=db, current_user_membership=current_user_membership
-    )
+    chatbots = chatbot_service.get_all_or_none(db=db, user_id=user_id)
     return chatbots
 
 
@@ -172,27 +188,51 @@ def get_all(
     )
 
 
+@router.delete(
+    "/{chatbot_id}/knowledge-base/{knowledge_base_id}",
+    status_code=status.HTTP_200_OK,
+)
+def delete(
+    chatbot_id: str,
+    knowledge_base_id: str,
+    # current_user_membership: UserSubscriptionPlan = Depends(
+    #     oauth2.get_current_user_membership_info_by_token
+    # ),
+    db: Session = Depends(deps.get_db),
+):
+    return knowledgebase_service.delete(
+        db=db,
+        chatbot_id=chatbot_id,
+        knowledge_base_id=knowledge_base_id,
+        # current_user_membership=current_user_membership,
+    )
+
+
 @router.post("/{chatbot_id}/message", status_code=status.HTTP_200_OK)
 def message_chatbot(
     chatbot_id: str,
     message: dict,
     request: Request,
     db: Session = Depends(deps.get_db),
-    conversation_id: str = Cookie(None)
+    conversation_id: str = Cookie(None),
 ):
     # client_ip = request.client.host
     # client_ip = request.client.host
     client_ip = "42.118.119.124"
-    response = chatbot_service.message(db=db, chatbot_id=chatbot_id, conversation_id=conversation_id, message=message['message'], client_ip=client_ip)
+    response = chatbot_service.message(
+        db=db,
+        chatbot_id=chatbot_id,
+        conversation_id=conversation_id,
+        message=message["message"],
+        client_ip=client_ip,
+    )
     return response
 
 
 @router.get("/{chatbot_id}/new-conversation", status_code=status.HTTP_200_OK)
 def new_conversation(
-    chatbot_id: str,
-    request: Request,
-    db: Session = Depends(deps.get_db)
-    ) -> ConversationOut:
+    chatbot_id: str, request: Request, db: Session = Depends(deps.get_db)
+) -> ConversationOut:
     # client_ip = request.client.host
     client_ip = "42.118.119.124"
     new_conversation = conversation_service.create(

@@ -12,6 +12,7 @@ from app.common import utils
 from app.common.logger import setup_logger
 from app.core.config import settings
 from app.crud.crud_chatbot import crud_chatbot
+from app.crud.crud_user import crud_user
 from app.crud.crud_conversation import crud_conversation
 from app.crud.crud_message import crud_message
 from app.schemas.chatbot import (
@@ -51,6 +52,7 @@ class ChatBotServiceImpl(ChatBotService):
 
     def __init__(self):
         self.__crud_chatbot = crud_chatbot
+        self.__crud_user = crud_user
         self.__user_session_service: UserSessionService = (
             UserSessionServiceImpl()
         )
@@ -65,9 +67,7 @@ class ChatBotServiceImpl(ChatBotService):
         self.client = OpenAI(api_key=settings.OPEN_API_KEY)
         self.DEFAULT_PROMPT = (
             "You are a helpful assistant. The first prompt will be a long text,"
-            \
-            
-            "and any messages that you get be regarding that. Please answer any " \
+            "and any messages that you get be regarding that. Please answer any "
             "questions and requests having in mind the first prompt"
         )
 
@@ -114,19 +114,19 @@ class ChatBotServiceImpl(ChatBotService):
             result: ChatBotOut = ChatBotOut(**chatbot_created.__dict__)
         return result
 
-    def get_all_or_none(
-        self, db: Session, current_user_membership: UserSubscriptionPlan
-    ) -> Optional[List[ChatBotOut]]:
-        try:
-            results = self.__crud_chatbot.get_multi(
-                db=db, filter_param={"user_id": current_user_membership.u_id}
-            )
-            return results
-        except:
-            logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
-            )
-            return None
+    # def get_all_or_none(
+    #     self, db: Session, current_user_membership: UserSubscriptionPlan
+    # ) -> Optional[List[ChatBotOut]]:
+    #     try:
+    #         results = self.__crud_chatbot.get_multi(
+    #             db=db, filter_param={"user_id": current_user_membership.u_id}
+    #         )
+    #         return results
+    #     except:
+    #         logger.exception(
+    #             f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
+    #         )
+    #         return None
 
     def get_one_with_filter_or_none(
         self, db: Session, filter: dict
@@ -291,3 +291,27 @@ class ChatBotServiceImpl(ChatBotService):
         except:
             traceback.print_exc()
             pass
+
+
+    def get_all_or_none(
+        self,
+        db: Session,
+        user_id: str,
+    ) -> Optional[List[ChatBotOut]]:
+        try:
+            user_found = self.__crud_user.get_one_by(db=db, filter={"id": user_id})
+            if user_found is None:
+                raise HTTPException(status_code=404, detail="Chatbot not found")
+
+            chatbots: List[ChatBotOut] = self.__crud_chatbot.get_multi(
+                db=db,
+                filter_param={
+                    "filter": json.dumps({"user_id": str(user_found.id)})
+                },
+            )
+            return chatbots
+        except Exception as e:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
+            )
+            raise HTTPException(status_code=400, detail="Get all chatbot failed")

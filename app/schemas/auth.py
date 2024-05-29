@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+import pydantic
 
 
 class Email(BaseModel):
@@ -8,3 +9,6 @@ class Email(BaseModel):
 class ChangePassword(BaseModel):
     password_old: str
     password_new: str
+
+class EmailSchema(pydantic.BaseModel):
+    email: pydantic.EmailStr
