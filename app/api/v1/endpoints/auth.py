@@ -74,12 +74,12 @@ async def forgot_password(
     return await auth_service.forgot_password(db=db, email=email)
 
 
-@router.get("/change-password")
-async def change_password(
-    password: ChangePassword,
-    get_current_user: UserOut = Depends(oauth2.get_current_user),
-    db: Session = Depends(deps.get_db),
-):
-    return await auth_service.change_password(
-        db=db, get_current_user=get_current_user, password=password
-    )
+# @router.get("/change-password")
+# async def change_password(
+#     password: ChangePassword,
+#     get_current_user: UserOut = Depends(oauth2.get_current_user),
+#     db: Session = Depends(deps.get_db),
+# ):
+#     return await auth_service.change_password(
+#         db=db, get_current_user=get_current_user, password=password
+#     )

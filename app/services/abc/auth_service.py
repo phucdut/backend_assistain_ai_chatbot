@@ -44,8 +44,8 @@ class AuthService(ABC):
     async def forgot_password(self, db: Session, email: EmailSchema):
         pass
 
-    @abstractmethod
-    async def change_password(
-        self, db: Session, get_current_user: UserOut, password: ChangePassword
-    ):
-        pass
+    # @abstractmethod
+    # async def change_password(
+    #     self, db: Session, get_current_user: UserOut, password: ChangePassword
+    # ):
+    #     pass

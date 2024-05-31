@@ -18,12 +18,18 @@ from app.schemas.user import (
     UserUpdate,
     UpdatePassword,
 )
+from app.schemas.user_subscription import (
+    UserSubscriptionUpdate,
+    UserSubscriptionOut,
+)
+from app.services.abc.payment_vnpay_service import PaymentVnPayService
+from app.services.impl.payment_vnpay_service_impl import PaymentVnPayServiceImpl
 
 
 router = APIRouter()
 
 user_service = UserServiceImpl()
-
+payment_vnpay_service: PaymentVnPayService = PaymentVnPayServiceImpl()
 
 @router.get("/profile", response_model=UserOut, status_code=status.HTTP_200_OK)
 def get_profile(
@@ -70,5 +76,65 @@ async def change_password(
     db: Session = Depends(deps.get_db),
 ):
     return await user_service.change_password(
-        db=db, current_user_membership=current_user_membership, user_id=user_id, password=change_password
+        db=db,
+        current_user_membership=current_user_membership,
+        user_id=user_id,
+        password=change_password,
+    )
+
+
+# @router.put(
+#     "/edit/{user_id}/{subscription_plan_id}",
+#     status_code=status.HTTP_200_OK,
+#     response_model=UserOut,
+# )
+# def update(
+#     user_id: str,
+#     user_update: UserUpdate,
+#     current_user_membership: UserSubscriptionPlan = Depends(
+#         oauth2.get_current_user_membership_info_by_token
+#     ),
+#     db: Session = Depends(deps.get_db),
+# ) -> UserOut:
+#     updated_user = user_service.update_one_with_filter(
+#         db=db,
+#         user_update=user_update,
+#         current_user_membership=current_user_membership,
+#         filter={"id": user_id},
+#     )
+
+
+@router.get("/get-all", status_code=status.HTTP_200_OK)
+def get_all(
+    current_user_membership: UserSubscriptionPlan = Depends(
+        oauth2.get_current_user_membership_info_by_token
+    ),
+    db: Session = Depends(deps.get_db),
+):
+    user_subscription_plan = user_service.get_all_or_none(
+        db=db, current_user_membership=current_user_membership
+    )
+    return user_subscription_plan
+
+
+@router.put(
+    "/edit/{user_id}/{plan_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=UserOut,
+)
+def update(
+    user_id: str,
+    plan_id: str,
+    subscription_plan_update: UserSubscriptionUpdate,
+    current_user_membership: UserSubscriptionPlan = Depends(
+        oauth2.get_current_user_membership_info_by_token
+    ),
+    db: Session = Depends(deps.get_db),
+) -> UserSubscriptionOut:
+    updated_user = user_service.update_one_membership_with_filter(
+        db=db,
+        user_update=subscription_plan_update,
+        current_user_membership=current_user_membership,
+        filter1={"id": user_id},
+        filter2={"id": plan_id},
     )

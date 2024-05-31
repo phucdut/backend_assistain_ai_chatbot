@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -9,7 +9,13 @@ from app.schemas.user import (
     UserOut,
     UserSignInWithGoogle,
     UserUpdate,
-    UpdatePassword
+    UpdatePassword,
+)
+from app.schemas.subscription_plan import SubscriptionPlanOut
+
+from app.schemas.user_subscription import (
+    UserSubscriptionUpdate,
+    UserSubscriptionOut,
 )
 
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
@@ -65,6 +71,27 @@ class UserService(ABC):
 
     @abstractmethod
     async def change_password(
-        self, db: Session, current_user_membership: UserSubscriptionPlan, password: UpdatePassword, user_id=str
+        self,
+        db: Session,
+        current_user_membership: UserSubscriptionPlan,
+        password: UpdatePassword,
+        user_id=str,
     ):
+        pass
+
+    @abstractmethod
+    def get_all_or_none(
+        self, db: Session, user_id: str
+    ) -> Optional[List[SubscriptionPlanOut]]:
+        pass
+
+    @abstractmethod
+    def update_one_membership_with_filter(
+        self,
+        db: Session,
+        user_update: UserSubscriptionUpdate,
+        current_user_membership: UserSubscriptionPlan,
+        filter1: dict,
+        filter2: dict,
+    ) -> UserSubscriptionOut:
         pass
