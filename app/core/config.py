@@ -49,6 +49,12 @@ class Settings(BaseSettings):
 
     OPEN_API_KEY: str = os.environ.get("OPEN_API_KEY")
 
+    VNPAY_RETURN_URL: str = os.environ.get("VNPAY_RETURN_URL")
+    VNPAY_PAYMENT_URL: str = os.environ.get("VNPAY_PAYMENT_URL")
+    VNPAY_API_URL: str = os.environ.get("VNPAY_API_URL")
+    VNPAY_TMN_CODE: str = os.environ.get("VNPAY_TMN_CODE")
+    VNPAY_HASH_SECRET_KEY: str = os.environ.get("VNPAY_HASH_SECRET_KEY")
+
     @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: Optional[str], info: FieldValidationInfo) -> Any:

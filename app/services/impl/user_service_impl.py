@@ -1,14 +1,19 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
 from fastapi import Depends, HTTPException
 from fastapi.responses import JSONResponse, RedirectResponse
-
+from app.schemas.user_subscription import (
+    UserSubscriptionUpdate,
+    UserSubscriptionOut,
+)
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
 from app.common.logger import setup_logger
 from app.common import utils
 from app.crud.crud_user import crud_user
+from app.crud.crud_subscription_plan import crud_subscription_plan
+from app.crud.crud_user_subscription import crud_user_subscription
 from app.schemas.user import (
     UserCreate,
     UserInDB,
@@ -17,6 +22,7 @@ from app.schemas.user import (
     UserUpdate,
     UpdatePassword,
 )
+from app.schemas.subscription_plan import SubscriptionPlanOut
 from app.services.abc.user_service import UserService
 
 logger = setup_logger()
@@ -26,6 +32,8 @@ class UserServiceImpl(UserService):
 
     def __init__(self):
         self.__crud_user = crud_user
+        self.__crud_subscription_plan = crud_subscription_plan
+        self.__crud_user_subscription = crud_user_subscription
 
     def create(self, db: Session, user: UserCreate) -> UserOut:
         user_found = self.get_one_with_filter_or_none(
@@ -75,6 +83,19 @@ class UserServiceImpl(UserService):
         except:
             logger.exception(
                 f"Exception in {__name__}.{self.__class__.__name__}.get_edit_one_with_filter_or_none"
+            )
+            return None
+
+    def get_edit_one_subscription_plan_with_filter_or_none(
+        self, db: Session, filter: dict
+    ) -> Optional[SubscriptionPlanOut]:
+        try:
+            return self.__crud_subscription_plan.get_one_by(
+                db=db, filter=filter
+            )
+        except:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.get_edit_one_subscription_plan_with_filter_or_none"
             )
             return None
 
@@ -221,3 +242,69 @@ class UserServiceImpl(UserService):
             status_code=200,
             content={"status": 200, "message": "Change password successful"},
         )
+
+    def get_all_or_none(
+        self, db: Session, current_user_membership: UserSubscriptionPlan
+    ) -> Optional[List[SubscriptionPlanOut]]:
+        try:
+            results = self.__crud_subscription_plan.get_multi(
+                db=db, filter_param={"user_id": current_user_membership.u_id}
+            )
+            return results
+        except:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
+            )
+            return None
+
+    def update_one_membership_with_filter(
+        self,
+        db: Session,
+        filter1: dict,
+        filter2: dict,
+        user_update: UserSubscriptionUpdate,
+        current_user_membership: UserSubscriptionPlan,
+    ) -> UserOut:
+        try:
+            user_subscription = self.get_edit_one_with_filter_or_none(
+                db=db, filter=filter1
+            )
+            if user_subscription is None:
+                logger.exception(
+                    f"Exception in {__name__}.{self.__class__.__name__}.update_one_with_filter: user not found"
+                )
+                raise HTTPException(
+                    detail="Update user subscription plan failed: User not found",
+                    status_code=404,
+                )
+
+            subscription_plan = (
+                self.get_edit_one_subscription_plan_with_filter_or_none(
+                    db=db, filter=filter2
+                )
+            )
+            if subscription_plan is None:
+                logger.exception(
+                    f"Exception in {__name__}.{self.__class__.__name__}.update_one_with_filter: subscription plan not found"
+                )
+                raise HTTPException(
+                    detail="Update user subscription plan failed: subscription plan not found",
+                    status_code=404,
+                )
+
+            # Cập nhật thông tin người dùng
+            updated_membership = self.__crud_user_subscription.update(
+                db=db, db_obj=user_subscription, obj_in=user_update
+            )
+
+            # Trả về thông tin người đăng kí sau khi cập nhật
+            return updated_membership
+        except Exception as e:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.update_one_membership_with_filter"
+            )
+            raise HTTPException(
+                detail="Update user subscription plan failed", status_code=400
+            )
+
+
