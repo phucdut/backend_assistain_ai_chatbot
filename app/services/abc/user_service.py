@@ -38,6 +38,12 @@ class UserService(ABC):
         pass
 
     @abstractmethod
+    def get_one_user_subscription__with_filter_or_none(
+        self, db: Session, filter: dict
+    ) -> Optional[UserSubscriptionOut]:
+        pass
+
+    @abstractmethod
     def get_one_with_filter_or_none_db(
         self, db: Session, filter: dict
     ) -> Optional[UserInDB]:
@@ -94,4 +100,4 @@ class UserService(ABC):
         filter1: dict,
         filter2: dict,
     ) -> UserSubscriptionOut:
-        pass
+        pass   

@@ -1,4 +1,5 @@
 from typing import List, Optional
+import json
 
 from sqlalchemy.orm import Session
 
@@ -197,7 +198,7 @@ class UserServiceImpl(UserService):
         if user_found:
             result: UserOut = UserOut(**user_found.__dict__)
             return result
-        return None
+        raise HTTPException(status_code=404, detail="User not found")
 
     async def change_password(
         self,
@@ -307,4 +308,15 @@ class UserServiceImpl(UserService):
                 detail="Update user subscription plan failed", status_code=400
             )
 
-
+    def get_one_user_subscription__with_filter_or_none(
+        self, db: Session, filter: dict
+    ) -> Optional[UserSubscriptionOut]:
+        user_found = self.__crud_user_subscription.get_one_by(
+            db=db, filter=filter
+        )
+        if user_found:
+            result: UserSubscriptionOut = UserSubscriptionOut(
+                **user_found.__dict__
+            )
+            return result
+        return None

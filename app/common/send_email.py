@@ -39,7 +39,7 @@ async def send_reset_password_email(
     """Send reset password email to user."""
     fm = FastMail(conf)
     message = MessageSchema(
-        subject="Reset Password for Sole Mate AI",
+        subject="Reset Password for Ally AI",
         recipients=[email],
         body=email_forgot_password_template(
             user_name=display_name,

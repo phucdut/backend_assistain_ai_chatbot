@@ -125,17 +125,17 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
             if not upgrade_membership:
                 logger.error("Upgrade membership update failed")
                 return RedirectResponse(
-                    f"{settings.REDIRECT_FRONTEND_URL}/success/?payment-failure?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}"
+                    f"{settings.REDIRECT_FRONTEND_URL}/upgrade-membership/failure-payment/?payment-failure?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}"
                 )
         except Exception as e:
             logger.error(f"Error: {e}")
             return RedirectResponse(
-                f"{settings.REDIRECT_FRONTEND_URL}/success/?payment-failure?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}"
+                f"{settings.REDIRECT_FRONTEND_URL}/upgrade-membership/failure-payment/?payment-failure?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}"
             )
 
         logger.info("Payment validation succeeded")
         return RedirectResponse(
-            f"{settings.REDIRECT_FRONTEND_URL}/success/?payment-success?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}&vnp_TransactionNo={response['vnp_TransactionNo']}"
+            f"{settings.REDIRECT_FRONTEND_URL}/upgrade-membership/success-payment/?payment-success?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}&vnp_TransactionNo={response['vnp_TransactionNo']}"
         )
 
     def get_edit_one_with_filter_or_none(

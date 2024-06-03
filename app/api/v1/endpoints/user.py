@@ -1,4 +1,15 @@
 import uuid
+from typing import List, Optional
+from fastapi import (
+    APIRouter,
+    Cookie,
+    Depends,
+    File,
+    HTTPException,
+    Request,
+    UploadFile,
+    status,
+)
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
@@ -30,6 +41,7 @@ router = APIRouter()
 
 user_service = UserServiceImpl()
 payment_vnpay_service: PaymentVnPayService = PaymentVnPayServiceImpl()
+
 
 @router.get("/profile", response_model=UserOut, status_code=status.HTTP_200_OK)
 def get_profile(
@@ -138,3 +150,21 @@ def update(
         filter1={"id": user_id},
         filter2={"id": plan_id},
     )
+
+@router.get(
+    "/{user_id}/get-user-subscription", status_code=status.HTTP_200_OK
+)
+def get_one(
+    user_id: str,
+    current_user_membership: UserSubscriptionPlan = Depends(
+        oauth2.get_current_user_membership_info_by_token
+    ),
+    db: Session = Depends(deps.get_db),
+    response_model=Optional[UserSubscriptionOut],
+)-> Optional[UserSubscriptionOut]:
+    user_subscription = user_service.get_one_user_subscription__with_filter_or_none(
+        db=db, filter={"user_id": user_id}
+    )
+    if user_subscription is None:
+        raise HTTPException(status_code=404, detail="User subscription not found")
+    return user_subscription

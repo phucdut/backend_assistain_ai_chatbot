@@ -14,6 +14,7 @@ from datetime import datetime
 from app.common.logger import setup_logger
 from app.core.config import settings
 from app.crud.crud_conversation import crud_conversation
+from app.crud.crud_user import crud_user
 from app.schemas.conversation import ConversationCreate, ConversationOut
 from app.schemas.message import MessageCreate
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
@@ -36,6 +37,7 @@ class ConversationServiceImpl(ConversationService):
         self.__crud_conversation = crud_conversation
         self.__crud_message: MessageService = MessageServiceImpl()
         self.__crud_message_base = crud_message
+        self.__crud_user = crud_user
         # self.__chatbot_service: ChatBotService = ChatBotServiceImpl()
         # self.__message_service: MessageService = MessageServiceImpl()
         # self.__user_session_service: UserSessionService = UserSessionServiceImpl()
@@ -104,8 +106,36 @@ class ConversationServiceImpl(ConversationService):
                 f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
             )
             return None
+        
+    def get_all_or_none_with_user_id(
+        self,
+        db: Session,
+        user_id: str,
+        current_user_membership: UserSubscriptionPlan
+    ) -> Optional[List[ConversationOut]]:
+        try:
+            user_found = self.__crud_user.get_one_by(
+                db=db, filter={"id": user_id}
+            )
+            if user_found is None:
+                raise HTTPException(status_code=404, detail="User not found")
 
-    def load_messsages(self, conversation_id, db: Session, current_user_membership: UserSubscriptionPlan):
+            conversations: List[ConversationOut] = self.__crud_conversation.get_multi(
+                db=db,
+                filter_param={
+                    "filter": json.dumps({"user_id": str(user_found.id)})
+                },
+            )
+            return conversations
+        except Exception as e:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
+            )
+            raise HTTPException(
+                status_code=400, detail="Get all conversations failed"
+            )
+        
+    def load_messsages(self, conversation_id, db: Session):
         try:
             messages = self.__crud_message.get_messages_by_conversation_id(db=db, conversation_id=conversation_id)
             return messages
