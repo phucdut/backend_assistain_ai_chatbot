@@ -212,7 +212,7 @@ class AuthServiceImpl(AuthService):
                     )
                     if is_sended:
                         return RedirectResponse(
-                            url=f"{settings.REDIRECT_FRONTEND_URL}/success"
+                            url=f"{settings.REDIRECT_FRONTEND_URL}/home?token={session_created.token}"
                         )
                     return RedirectResponse(
                         url=f"{settings.REDIRECT_FRONTEND_URL}/error"
@@ -252,7 +252,7 @@ class AuthServiceImpl(AuthService):
                 )
                 if is_sended:
                     return RedirectResponse(
-                        url=f"{settings.REDIRECT_FRONTEND_URL}/success"
+                        url=f"{settings.REDIRECT_FRONTEND_URL}/home?token={session_created.token}"
                     )
                 return RedirectResponse(
                     url=f"{settings.REDIRECT_FRONTEND_URL}/error"
@@ -313,36 +313,3 @@ class AuthServiceImpl(AuthService):
             status_code=500,
             content={"status": 500, "message": "Reset password failed"},
         )
-
-    # async def change_password(
-    #     self, db: Session, get_current_user: UserOut, password: ChangePassword
-    # ):
-    #     user_found = self.__user_service.get_one_with_filter_or_none(
-    #         db=db, filter={"id": get_current_user.id}
-    #     )
-    #     if user_found is None:
-    #         logger.exception(
-    #             f"Exception in {__name__}.{self.__class__.__name__}.reset_password: User not found"
-    #         )
-    #         raise HTTPException(status_code=400, detail="User not found")
-
-    #     try:
-    #         self.__user_service.update_one_with_filter(
-    #             db=db,
-    #             filter={
-    #                 "password_hash": utils.hash(password.password_old),
-    #                 "id": get_current_user.id,
-    #             },
-    #             user=UserUpdate(
-    #                 password_hash=utils.hash(password.password_new)
-    #             ),
-    #         )
-    #     except Exception as e:
-    #         logger.exception(
-    #             f"Exception in {__name__}.{self.__class__.__name__}.change_password: {e}"
-    #         )
-    #         raise HTTPException(status_code=400, detail="Password not changed")
-    #     return JSONResponse(
-    #         status_code=200,
-    #         content={"message": "Password changed successfully"},
-    #     )

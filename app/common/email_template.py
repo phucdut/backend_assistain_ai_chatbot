@@ -21,7 +21,7 @@ def email_verify_template(user_name: str, redirect_url: str, mode: int) -> str:
                     <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
                         <tr>
                             <td align="center">
-                                <img src="https://raw.githubusercontent.com/DNAnh01/assets/main/ally-ai-logo.png"
+                                <img src="http://localhost:3000/Horizontal-logo.png"
                                     alt="Ally AI Logo" style="display: block; width: 200px; margin: 20px auto;">
                             </td>
                         </tr>
@@ -81,7 +81,7 @@ def email_forgot_password_template(user_name: str, password_reset: str) -> str:
                     <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
                         <tr>
                             <td align="center">
-                                <img src="https://raw.githubusercontent.com/DNAnh01/assets/main/ally-ai-logo.png" alt="Ally AI Logo"
+                                <img src="http://localhost:3000/Horizontal-logo.png" alt="Ally AI Logo"
                                     style="display: block; width: 200px; margin: 20px auto;">
                             </td>
                         </tr>

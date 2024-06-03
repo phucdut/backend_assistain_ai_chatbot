@@ -126,7 +126,7 @@ class ChatBotServiceImpl(ChatBotService):
             return None
 
     def update_one_with_filter(
-        self,
+        self,   
         db: Session,
         chatbot_update: ChatBotUpdate,
         current_user_membership: UserSubscriptionPlan,
@@ -349,7 +349,7 @@ class ChatBotServiceImpl(ChatBotService):
                     {"role": "user", "content": message["message"]}
                 )
             response = self.client.chat.completions.create(
-                model=chatbot.model, messages=temp_knowledgeBase
+                model=chatbot.model, messages=temp_knowledgeBase, max_tokens=chatbot.max_tokens, temperature=chatbot.temperature
             )
             response = response.choices[0].message.content
             return response, chatbot.id
@@ -367,7 +367,7 @@ class ChatBotServiceImpl(ChatBotService):
                 db=db, filter={"id": user_id}
             )
             if user_found is None:
-                raise HTTPException(status_code=404, detail="Chatbot not found")
+                raise HTTPException(status_code=404, detail="User not found")
 
             chatbots: List[ChatBotOut] = self.__crud_chatbot.get_multi(
                 db=db,
