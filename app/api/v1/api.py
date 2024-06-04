@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, chatbot, conversation, user, payment
+from app.api.v1.endpoints import auth, chatbot, conversation, user, payment, dashboard
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth",
@@ -12,3 +12,6 @@ api_router.include_router(conversation.router, prefix="/conversation",
 
 api_router.include_router(user.router, prefix="/user", tags=["users"])
 api_router.include_router(payment.router, prefix="/payment", tags=["payments"])
+api_router.include_router(
+    dashboard.router, prefix="/dashboard", tags=["dashboard"]
+)

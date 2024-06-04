@@ -20,7 +20,7 @@ class MessageOut(MessageBase):
     message: str
     sender_id: str
     sender_type: str
-
+    latency: float
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 

@@ -1,5 +1,5 @@
 # "conversational.py"
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, String, Float
 from sqlalchemy.dialects.postgresql.base import UUID
 from sqlalchemy.orm import relationship
 
@@ -14,5 +14,7 @@ class Message(Base):
     sender_id = Column(String)
     sender_type = Column(String)  # user or bot
     message = Column(String)
+    latency = Column(Float, default=0)
+
 
     conversation = relationship("Conversation", back_populates="messages")
