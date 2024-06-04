@@ -1,5 +1,6 @@
 import json
 import traceback
+import time
 from typing import List, Optional
 from fastapi.responses import JSONResponse
 
@@ -126,7 +127,7 @@ class ChatBotServiceImpl(ChatBotService):
             return None
 
     def update_one_with_filter(
-        self,   
+        self,
         db: Session,
         chatbot_update: ChatBotUpdate,
         current_user_membership: UserSubscriptionPlan,
@@ -215,6 +216,7 @@ class ChatBotServiceImpl(ChatBotService):
         client_ip: str,
     ) -> MessageOut:
         try:
+            start_time = time.time()
             conversation = self.__conversation_service.check_conversation(
                 db=db,
                 conversation_id=conversation_id,
@@ -239,11 +241,14 @@ class ChatBotServiceImpl(ChatBotService):
                     conversation_id=conversation_id,
                     message=message,
                 )
+                end_time = time.time()  # End time
+                execution_time = end_time - start_time
                 message_form = {
                     "sender_id": chatbot_id,
                     "sender_type": "bot",
                     "message": response,
                     "conversation_id": conversation.id,
+                    "latency": execution_time,
                 }
                 add_message = self.__crud_message_base.create(
                     db=db, obj_in=message_form
@@ -349,7 +354,10 @@ class ChatBotServiceImpl(ChatBotService):
                     {"role": "user", "content": message["message"]}
                 )
             response = self.client.chat.completions.create(
-                model=chatbot.model, messages=temp_knowledgeBase, max_tokens=chatbot.max_tokens, temperature=chatbot.temperature
+                model=chatbot.model,
+                messages=temp_knowledgeBase,
+                max_tokens=chatbot.max_tokens,
+                temperature=chatbot.temperature,
             )
             response = response.choices[0].message.content
             return response, chatbot.id

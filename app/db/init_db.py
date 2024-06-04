@@ -147,7 +147,7 @@ def init_db():
                         email="admin@admin.com",
                         password_hash=hash("admin"),
                         display_name="admin",
-                        avatar_url="https://raw.githubusercontent.com/DNAnh01/assets/main/default_user_avatar.png",
+                        avatar_url="http://localhost:3000/Ellipse%201.svg",
                         payment_information="",
                         is_verified=False,
                         user_role="admin",
