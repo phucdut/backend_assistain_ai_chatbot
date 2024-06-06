@@ -10,7 +10,7 @@ def setup_logger() -> logging.Logger:
             "%(log_color)s%(levelname)s:%(name)s:%(pathname)s:%(funcName)s:%(message)s",
             log_colors={
                 "DEBUG": "cyan",
-                "INFO": "green, bg_white",
+                "INFO": "green",
                 "WARNING": "yellow",
                 "ERROR": "red",
                 "CRITICAL": "red,bg_white",

@@ -30,10 +30,11 @@ admin_dashboard_service: AdminDashboardService = AdminDashboardServiceImpl()
 router = APIRouter()
 
 
-@router.get("/chart/{filter}/{value}", response_model=List[ChartDataTableMessageSchema])
+@router.get("/chart/{filter}/{value}/message/{conversation_id}", response_model=List[ChartDataTableMessageSchema])
 def get_statistic_table_message_by_filter(
     filter: str,
     value: str,
+    conversation_id: str,
     current_user_membership: UserSubscriptionPlan = Depends(
         oauth2.get_current_user_membership_info_by_token
     ),
@@ -43,10 +44,11 @@ def get_statistic_table_message_by_filter(
         db=db,
         filter=filter,
         value=value,
+        conversation_id=conversation_id,
         current_user_membership=current_user_membership,
     )
 
-@router.get("/chart/{filter}/{value}/{chatbot_id}", response_model=List[ChartDataTableConversationSchema])
+@router.get("/chart/{filter}/{value}/conversation/{chatbot_id}", response_model=List[ChartDataTableConversationSchema])
 def get_statistic_table_conversation_by_filter(
     filter: str,
     value: str,

@@ -31,11 +31,12 @@ class AdminDashboardServiceImpl(AdminDashboardService):
         db: Session,
         filter: str,
         value: str,
+        conversation_id: str,
         current_user_membership: UserSubscriptionPlan,
     ) -> List[ChartDataTableMessageSchema]:
         try:
             return self.__crud_admin_dashboard.get_table_message_capital_by_filter(
-                db, filter, value
+                db, filter, value, conversation_id
             )
         except Exception as e:
             logger.exception(
