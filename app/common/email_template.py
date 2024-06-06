@@ -14,15 +14,15 @@ def email_verify_template(user_name: str, redirect_url: str, mode: int) -> str:
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Verify Email Address for Ally AI</title>
+                    <title>Verify Email Address for AllyBy AI</title>
                 </head>
 
                 <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #eff2f4;">
                     <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
                         <tr>
                             <td align="center">
-                                <img src="http://localhost:3000/Horizontal-logo.png"
-                                    alt="Ally AI Logo" style="display: block; width: 200px; margin: 20px auto;">
+                                <img src="https://github.com/phucdut/frontend_assistain_ai_chatbot/blob/master/public/logo/allyby%20(2).png?raw=true"
+                                    alt="AllyBy AI Logo" style="display: block; width: 200px; margin: 20px auto; border-radius: 10px;">
                             </td>
                         </tr>
                         <tr>
@@ -35,7 +35,7 @@ def email_verify_template(user_name: str, redirect_url: str, mode: int) -> str:
                                     </tr>
                                     <tr>
                                         <td style="padding: 20px 0 30px 0; color: #153643; font-size: 16px; line-height: 20px;">
-                                            Thanks for registering for an account on Ally AI! Before we get started, we just need to
+                                            Thanks for registering for an account on AllyBy AI! Before we get started, we just need to
                                             confirm that this is you. Click below to verify your email address:
                                         </td>
                                     </tr>
@@ -74,15 +74,15 @@ def email_forgot_password_template(user_name: str, password_reset: str) -> str:
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Reset Password for Ally AI</title>
+                    <title>Reset Password for AllyBy AI</title>
                 </head>
 
                 <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #eff2f4;">
                     <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
                         <tr>
                             <td align="center">
-                                <img src="http://localhost:3000/Horizontal-logo.png" alt="Ally AI Logo"
-                                    style="display: block; width: 200px; margin: 20px auto;">
+                                <img src="https://github.com/phucdut/frontend_assistain_ai_chatbot/blob/master/public/logo/allyby%20(2).png?raw=true"
+                                    alt="AllyBy AI Logo" style="display: block; width: 200px; margin: 20px auto; border-radius: 10px;">
                             </td>
                         </tr>
                         <tr>

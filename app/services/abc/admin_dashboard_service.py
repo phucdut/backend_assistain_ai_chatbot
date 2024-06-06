@@ -25,6 +25,7 @@ class AdminDashboardService(ABC):
         db: Session,
         filter: str,
         value: str,
+        conversation_id: str,
         current_user_membership: UserSubscriptionPlan,
     ) -> List[ChartDataTableMessageSchema]:
         pass

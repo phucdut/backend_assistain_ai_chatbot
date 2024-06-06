@@ -62,7 +62,7 @@ class AuthServiceImpl(AuthService):
         # Check original email
         is_sended = await self.__email_service.send_verification_email(
             user_info={"email": user.email, "name": user.email},
-            redirect_url=f"{settings.REDIRECT_FRONTEND_URL}/",
+            redirect_url=f"{settings.REDIRECT_FRONTEND_URL}/sign-in",
         )
         # logger.warning(f"Email sended: {is_sended}")
         if is_sended:

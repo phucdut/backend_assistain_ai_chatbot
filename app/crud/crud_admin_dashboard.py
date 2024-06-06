@@ -45,7 +45,8 @@ LEFT JOIN (
     FROM
         messages
     WHERE
-        TO_CHAR(created_at, 'YYYY-MM-DD') = :date
+        conversation_id = :conversation_id
+        AND TO_CHAR(created_at, 'YYYY-MM-DD') = :date
     GROUP BY
         EXTRACT(HOUR FROM created_at)
 ) conv ON hr.hour_of_day = conv.hour_of_day
@@ -56,7 +57,8 @@ LEFT JOIN (
     FROM
         messages
     WHERE
-        TO_CHAR(created_at, 'YYYY-MM-DD') = :date
+        conversation_id = :conversation_id
+        AND TO_CHAR(created_at, 'YYYY-MM-DD') = :date
     GROUP BY
         EXTRACT(HOUR FROM created_at)
 ) rate ON hr.hour_of_day = rate.hour_of_day
@@ -87,7 +89,8 @@ LEFT JOIN (
     FROM
         messages
     WHERE
-        TO_CHAR(created_at, 'YYYY-MM') = :month  
+        conversation_id = :conversation_id
+        AND TO_CHAR(created_at, 'YYYY-MM') = :month  
     GROUP BY
         EXTRACT(MONTH FROM created_at)
 ) conv ON dr.day_of_month = conv.day_of_month
@@ -98,7 +101,8 @@ LEFT JOIN (
     FROM
         messages
     WHERE
-        TO_CHAR(created_at, 'YYYY-MM') = :month  
+        conversation_id = :conversation_id
+        AND TO_CHAR(created_at, 'YYYY-MM') = :month  
     GROUP BY
         EXTRACT(MONTH FROM created_at)
 ) rate ON dr.day_of_month = rate.day_of_month
@@ -131,7 +135,8 @@ LEFT JOIN (
     FROM
         messages
     WHERE
-        TO_CHAR(created_at, 'YYYY') = :year  
+        conversation_id = :conversation_id
+        AND TO_CHAR(created_at, 'YYYY') = :year  
     GROUP BY
         EXTRACT(MONTH FROM created_at)
 ) conv ON mr.month_of_year = conv.month_of_year
@@ -142,7 +147,8 @@ LEFT JOIN (
     FROM
         messages
     WHERE
-        TO_CHAR(created_at, 'YYYY') = :year 
+        conversation_id = :conversation_id
+        AND TO_CHAR(created_at, 'YYYY') = :year 
     GROUP BY
         EXTRACT(MONTH FROM created_at)
 ) rate ON mr.month_of_year = rate.month_of_year
@@ -151,16 +157,6 @@ GROUP BY
 ORDER BY
     mr.month_of_year;
 """
-
-
-
-
-
-
-
-
-
-
 
 
 # Statistic visitor, rating average by hour of a specific day
@@ -178,8 +174,8 @@ WITH HourReference AS (
 )
 SELECT
     hr.hour_of_day AS {ChartDataTableConversationSchema.TIME_POINT},
-    COALESCE(conv.visitor_count, 0) AS  {ChartDataTableConversationSchema.VISITOR_COST},
-    COALESCE(rate.rating_average, 0) AS {ChartDataTableConversationSchema.RATING_AVERAGE}
+    COALESCE(SUM(conv.visitor_count), 0) AS  {ChartDataTableConversationSchema.VISITOR_COST},
+    COALESCE(AVG(rate.rating_average), 0) AS {ChartDataTableConversationSchema.RATING_AVERAGE}
 FROM
     HourReference hr
 LEFT JOIN (
@@ -197,7 +193,7 @@ LEFT JOIN (
 LEFT JOIN (
     SELECT
         EXTRACT(HOUR FROM created_at) AS hour_of_day,
-        SUM(rating_score) AS rating_average
+        AVG(rating_score) AS rating_average
     FROM
         conversations
     WHERE
@@ -206,6 +202,8 @@ LEFT JOIN (
     GROUP BY
         EXTRACT(HOUR FROM created_at), chatbot_id
 ) rate ON hr.hour_of_day = rate.hour_of_day
+GROUP BY
+    hr.hour_of_day
 ORDER BY
     hr.hour_of_day;
 """
@@ -220,34 +218,34 @@ WITH RECURSIVE DayReference AS (
     WHERE day_of_month < EXTRACT(DAY FROM DATE_TRUNC('month', TO_DATE('2024-05', 'YYYY-MM')) + INTERVAL '1 month' - INTERVAL '1 day') 
 ) 
 SELECT
-    dr.day_of_month AS {ChartDataTableConversationSchema.TIME_POINT},
+    dr.day_of_month AS {ChartDataTableMessageSchema.TIME_POINT},
     COALESCE(SUM(conv.visitor_count), 0) AS  {ChartDataTableConversationSchema.VISITOR_COST},
     COALESCE(AVG(rate.rating_average), 0) AS {ChartDataTableConversationSchema.RATING_AVERAGE}
 FROM
     DayReference dr
 LEFT JOIN (
     SELECT
-        EXTRACT(DAY FROM created_at) AS day_of_month,
+        EXTRACT(MONTH FROM created_at) AS day_of_month,
         COUNT(*) AS visitor_count
     FROM
         conversations
     WHERE
-	    chatbot_id = :chatbot_id
-        AND TO_CHAR(created_at, 'YYYY-MM') = :month
+        chatbot_id = :chatbot_id
+        AND TO_CHAR(created_at, 'YYYY-MM') = :month  
     GROUP BY
-        EXTRACT(DAY FROM created_at) , chatbot_id
+        EXTRACT(MONTH FROM created_at), chatbot_id
 ) conv ON dr.day_of_month = conv.day_of_month
 LEFT JOIN (
     SELECT
-        EXTRACT(DAY FROM created_at) AS day_of_month,
+        EXTRACT(MONTH FROM created_at) AS day_of_month,
         AVG(rating_score) AS rating_average
     FROM
         conversations
     WHERE
-	    chatbot_id = :chatbot_id
+        chatbot_id = :chatbot_id
         AND TO_CHAR(created_at, 'YYYY-MM') = :month  
     GROUP BY
-        EXTRACT(DAY FROM created_at), chatbot_id
+        EXTRACT(MONTH FROM created_at), chatbot_id
 ) rate ON dr.day_of_month = rate.day_of_month
 GROUP BY
     dr.day_of_month
@@ -301,15 +299,6 @@ GROUP BY
 ORDER BY
     mr.month_of_year;
 """
-
-
-
-
-
-
-
-
-
 
 
 # Average rating score of a specific day
@@ -422,22 +411,22 @@ ORDER BY
 
 class CRUDAdminDashboard:
     def get_table_message_capital_by_filter(
-        self, db: Session, filter: str, value: str
+        self, db: Session, filter: str, value: str, conversation_id: str
     ) -> Optional[List[ChartDataTableMessageSchema]]:
         if filter == "day":
             result_proxy = db.execute(
                 text(GET_TABLE_MESSAGE_BY_HOUR_OF_SPECIFIC_DAY),
-                {"date": value},
+                {"date": value, "conversation_id": conversation_id},
             )
         elif filter == "month":
             result_proxy = db.execute(
                 text(GET_TABLE_MESSAGE_BY_DAY_OF_SPECIFIC_MONTH),
-                {"month": value},
+                {"month": value, "conversation_id": conversation_id},
             )
         elif filter == "year":
             result_proxy = db.execute(
                 text(GET_TABLE_MESSAGE_BY_MONTH_OF_SPECIFIC_YEAR),
-                {"year": value},
+                {"year": value, "conversation_id": conversation_id},
             )
         else:
             logger.error(f"Filter {filter} is not valid")
@@ -535,8 +524,12 @@ class CRUDAdminDashboard:
             return None
         result_dict = dict(zip(column_names, results))
         total_data = TotalDataTableConversationSchema(
-            visitor_cost=result_dict[TotalDataTableConversationSchema.VISITOR_COST],
-            rating_average=result_dict[TotalDataTableConversationSchema.RATING_AVERAGE],
+            visitor_cost=result_dict[
+                TotalDataTableConversationSchema.VISITOR_COST
+            ],
+            rating_average=result_dict[
+                TotalDataTableConversationSchema.RATING_AVERAGE
+            ],
         )
         logger.info(
             f"Get total visitor, average rating score by {filter} {value} successfully"
