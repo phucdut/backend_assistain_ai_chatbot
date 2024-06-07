@@ -12,7 +12,15 @@ app = FastAPI()
 # Add SessionMiddleware
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
-origins = ["*"]
+# origins = ["*"]
+
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost:3000",
+    "http://localhost:8080",
+    "https://e72d-113-176-195-120.ngrok-free.app",
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,7 +38,6 @@ if settings.ENV in ["development", "testing"]:
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-
 
 
 # delete all folders __pycache__ in the project
