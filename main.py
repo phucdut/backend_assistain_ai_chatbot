@@ -18,9 +18,12 @@ origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
     "http://localhost:3000",
+    "http://192.168.1.2:3000",
     "http://localhost:8080",
-    "https://e72d-113-176-195-120.ngrok-free.app",
+    "https://1420-2402-800-6205-305c-d18d-e7a-3231-20dd.ngrok-free.app",
 ]
+
+app.get("/")(lambda: {"message": "Hello World"})
 
 app.add_middleware(
     CORSMiddleware,
