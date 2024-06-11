@@ -13,12 +13,12 @@ class SubscriptionPlanBase(BaseModel):
     number_of_chatbots: int
     max_character_per_chatbot: int
     live_agent_takeover: bool
-    remove_label: bool
+    remove_label: bool = None
 
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
-    is_active: Optional[bool]
-    deleted_at: Optional[datetime]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    is_active: Optional[bool] = None
+    deleted_at: Optional[datetime] = None
 
 
 class SubscriptionPlanCreate(SubscriptionPlanBase):
@@ -53,6 +53,6 @@ class SubscriptionPlanUpdate(BaseModel):
     number_of_chatbots: Optional[int]
     max_character_per_chatbot: Optional[int]
     live_agent_takeover: Optional[bool]
-    remove_label: Optional[bool]
+    remove_label: Optional[bool] = None
 
-    updated_at: Optional[datetime]
+    updated_at: Optional[datetime] = None

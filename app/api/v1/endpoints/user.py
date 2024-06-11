@@ -18,6 +18,10 @@ from app.api import deps
 from app.core import oauth2
 
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
+from app.schemas.subscription_plan import (
+    SubscriptionPlanUpdate,
+    SubscriptionPlanOut,
+)
 
 from app.services.abc.user_service import UserService
 from app.services.impl.user_service_impl import UserServiceImpl
@@ -35,11 +39,15 @@ from app.schemas.user_subscription import (
 )
 from app.services.abc.payment_vnpay_service import PaymentVnPayService
 from app.services.impl.payment_vnpay_service_impl import PaymentVnPayServiceImpl
+from app.services.impl.subscription_plan_service_impl import (
+    SubscriptionPlanServiceImpl,
+)
 
 
 router = APIRouter()
 
 user_service = UserServiceImpl()
+subscription_plan_service = SubscriptionPlanServiceImpl()
 payment_vnpay_service: PaymentVnPayService = PaymentVnPayServiceImpl()
 
 
@@ -94,28 +102,6 @@ async def change_password(
         password=change_password,
     )
 
-
-# @router.put(
-#     "/edit/{user_id}/{subscription_plan_id}",
-#     status_code=status.HTTP_200_OK,
-#     response_model=UserOut,
-# )
-# def update(
-#     user_id: str,
-#     user_update: UserUpdate,
-#     current_user_membership: UserSubscriptionPlan = Depends(
-#         oauth2.get_current_user_membership_info_by_token
-#     ),
-#     db: Session = Depends(deps.get_db),
-# ) -> UserOut:
-#     updated_user = user_service.update_one_with_filter(
-#         db=db,
-#         user_update=user_update,
-#         current_user_membership=current_user_membership,
-#         filter={"id": user_id},
-#     )
-
-
 @router.get("/get-all", status_code=status.HTTP_200_OK)
 def get_all(
     current_user_membership: UserSubscriptionPlan = Depends(
@@ -123,10 +109,10 @@ def get_all(
     ),
     db: Session = Depends(deps.get_db),
 ):
-    user_subscription_plan = user_service.get_all_or_none(
+    user = user_service.get_all_user_or_none(
         db=db, current_user_membership=current_user_membership
     )
-    return user_subscription_plan
+    return user
 
 
 @router.put(
@@ -151,9 +137,8 @@ def update(
         filter2={"id": plan_id},
     )
 
-@router.get(
-    "/{user_id}/get-user-subscription", status_code=status.HTTP_200_OK
-)
+
+@router.get("/{user_id}/get-user-subscription", status_code=status.HTTP_200_OK)
 def get_one(
     user_id: str,
     current_user_membership: UserSubscriptionPlan = Depends(
@@ -161,10 +146,14 @@ def get_one(
     ),
     db: Session = Depends(deps.get_db),
     response_model=Optional[UserSubscriptionOut],
-)-> Optional[UserSubscriptionOut]:
-    user_subscription = user_service.get_one_user_subscription__with_filter_or_none(
-        db=db, filter={"user_id": user_id}
+) -> Optional[UserSubscriptionOut]:
+    user_subscription = (
+        user_service.get_one_user_subscription__with_filter_or_none(
+            db=db, filter={"user_id": user_id}
+        )
     )
     if user_subscription is None:
-        raise HTTPException(status_code=404, detail="User subscription not found")
+        raise HTTPException(
+            status_code=404, detail="User subscription not found"
+        )
     return user_subscription

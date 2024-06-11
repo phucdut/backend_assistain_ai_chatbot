@@ -86,9 +86,9 @@ class UserService(ABC):
         pass
 
     @abstractmethod
-    def get_all_or_none(
+    def get_all_user_or_none(
         self, db: Session, user_id: str
-    ) -> Optional[List[SubscriptionPlanOut]]:
+    ) -> Optional[List[UserOut]]:
         pass
 
     @abstractmethod

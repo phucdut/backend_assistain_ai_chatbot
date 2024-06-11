@@ -243,18 +243,18 @@ class UserServiceImpl(UserService):
             status_code=200,
             content={"status": 200, "message": "Change password successful"},
         )
-
-    def get_all_or_none(
+        
+    def get_all_user_or_none(
         self, db: Session, current_user_membership: UserSubscriptionPlan
-    ) -> Optional[List[SubscriptionPlanOut]]:
+    ) -> Optional[List[UserOut]]:
         try:
-            results = self.__crud_subscription_plan.get_multi(
+            results = self.__crud_user.get_multi(
                 db=db, filter_param={"user_id": current_user_membership.u_id}
             )
             return results
         except:
             logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
+                f"Exception in {__name__}.{self.__class__.__name__}.get_all_user_or_none"
             )
             return None
 
