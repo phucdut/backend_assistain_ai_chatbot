@@ -17,6 +17,7 @@ from app.schemas.total_data_table_messages_schema import (
 )
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
 
+
 class AdminDashboardService(ABC):
 
     @abstractmethod
@@ -40,7 +41,6 @@ class AdminDashboardService(ABC):
         current_user_membership: UserSubscriptionPlan,
     ) -> List[ChartDataTableConversationSchema]:
         pass
-
 
     @abstractmethod
     def get_table_conversation_by_filter(

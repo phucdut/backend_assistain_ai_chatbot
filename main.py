@@ -36,7 +36,7 @@ app.add_middleware(
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # Check if the project has been initialized before
-if settings.ENV in ["development", "testing"]:
+if settings.ENV in ["development"]:
     init_db()
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ async def send_verification_email(
     """Send verification email to user."""
     fm = FastMail(conf)
     message = MessageSchema(
-        subject="Verify Email Address for Sole Mate AI",
+        subject="Verify Email Address for AllyBy AI",
         recipients=[user_info["email"]],
         body=email_verify_template(
             user_name=user_info["name"],
@@ -39,7 +39,7 @@ async def send_reset_password_email(
     """Send reset password email to user."""
     fm = FastMail(conf)
     message = MessageSchema(
-        subject="Reset Password for Ally AI",
+        subject="Reset Password for AllyBy AI",
         recipients=[email],
         body=email_forgot_password_template(
             user_name=display_name,

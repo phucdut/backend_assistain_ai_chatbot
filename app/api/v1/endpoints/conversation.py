@@ -28,7 +28,7 @@ def get_all(
     return conversations
 
 
-@router.get("/{user_id}", status_code=status.HTTP_200_OK)
+@router.get("/user/{user_id}", status_code=status.HTTP_200_OK)
 def get_all(
     current_user_membership: UserSubscriptionPlan = Depends(
         oauth2.get_current_user_membership_info_by_token
@@ -38,6 +38,19 @@ def get_all(
 ):
     conversations = conversation_service.get_all_or_none_with_user_id(
         db=db, current_user_membership=current_user_membership, user_id=user_id
+    )
+    return conversations
+
+@router.get("/chatbot/{chatbot_id}", status_code=status.HTTP_200_OK)
+def get_all(
+    current_user_membership: UserSubscriptionPlan = Depends(
+        oauth2.get_current_user_membership_info_by_token
+    ),
+    db: Session = Depends(deps.get_db),
+    chatbot_id=str,
+):
+    conversations = conversation_service.get_all_or_none_with_chatbot_id(
+        db=db, current_user_membership=current_user_membership, chatbot_id=chatbot_id
     )
     return conversations
 

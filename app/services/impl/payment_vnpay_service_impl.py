@@ -58,17 +58,6 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
         }
         return RedirectResponse(self.__vnpay.get_payment_url(req))
 
-    # def read_item(self, request: Request, db: Session) -> str:
-    #     data = request.query_params.items()
-
-    #     response = {}
-    #     for i in data:
-    #         response[i[0]] = i[1]
-    #     if self.__vnpay.validate_response(response):
-    #         return "Thành công"
-    #     else:
-    #         return "Thất bại"
-
     def read_item(self, request: Request, db: Session) -> RedirectResponse:
         response = dict(request.query_params)
         res_vnp_Amount = str(int(response.get("vnp_Amount")) / 100)
@@ -76,7 +65,7 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
         if not self.__vnpay.validate_response(response):
             logger.error("Payment validation failed")
             return RedirectResponse(
-                f"{settings.REDIRECT_FRONTEND_URL}/user/payment-failure?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}"
+                f"{settings.REDIRECT_FRONTEND_URL}/upgrade-membership/failure-payment/?payment-failure?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}"
             )
 
         try:
@@ -93,16 +82,9 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
                     "Không tìm thấy user_id và subscription_plan_id trong vnp_OrderInfo"
                 )
 
-            logger.info("Payment validation succeeded", user_id, subscription_plan_id)
-            # user = self.__crud_user.get(db=db, id=user_id)
-            # if not user or user.status in [
-            #     "ORDER-CANCELLED",
-            #     "ORDER-DELIVERED",
-            # ]:
-            #     logger.error("Invalid order status or order not found")
-            #     return RedirectResponse(
-            #         f"{settings.REDIRECT_FRONTEND_URL}/user/payment-failure?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}"
-            #     )
+            logger.info(
+                "Payment validation succeeded", user_id, subscription_plan_id
+            )
             user_subscription = self.get_edit_one_with_filter_or_none(
                 db=db, filter={"user_id": user_id}
             )
@@ -142,13 +124,14 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
         self, db: Session, filter: dict
     ) -> Optional[UserSubscriptionOut]:
         try:
-            return self.__crud_user_subscription.get_one_by(db=db, filter=filter)
+            return self.__crud_user_subscription.get_one_by(
+                db=db, filter=filter
+            )
         except:
             logger.exception(
                 f"Exception in {__name__}.{self.__class__.__name__}.get_edit_one_with_filter_or_none"
             )
             return None
-
 
     def get_all_or_none(
         self, db: Session, current_user_membership: UserSubscriptionPlan

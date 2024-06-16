@@ -15,6 +15,7 @@ from app.common.logger import setup_logger
 from app.core.config import settings
 from app.crud.crud_conversation import crud_conversation
 from app.crud.crud_user import crud_user
+from app.crud.crud_chatbot import crud_chatbot
 from app.schemas.conversation import ConversationCreate, ConversationOut
 from app.schemas.message import MessageCreate
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
@@ -38,6 +39,7 @@ class ConversationServiceImpl(ConversationService):
         self.__crud_message: MessageService = MessageServiceImpl()
         self.__crud_message_base = crud_message
         self.__crud_user = crud_user
+        self.__crud_chatbot = crud_chatbot
         # self.__chatbot_service: ChatBotService = ChatBotServiceImpl()
         # self.__message_service: MessageService = MessageServiceImpl()
         # self.__user_session_service: UserSessionService = UserSessionServiceImpl()
@@ -124,6 +126,34 @@ class ConversationServiceImpl(ConversationService):
                 db=db,
                 filter_param={
                     "filter": json.dumps({"user_id": str(user_found.id)})
+                },
+            )
+            return conversations
+        except Exception as e:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
+            )
+            raise HTTPException(
+                status_code=400, detail="Get all conversations failed"
+            )
+        
+    def get_all_or_none_with_chatbot_id(
+        self,
+        db: Session,
+        chatbot_id: str,
+        current_user_membership: UserSubscriptionPlan
+    ) -> Optional[List[ConversationOut]]:
+        try:
+            chatbot_found = self.__crud_chatbot.get_one_by(
+                db=db, filter={"id": chatbot_id}
+            )
+            if chatbot_found is None:
+                raise HTTPException(status_code=404, detail="Chatbot not found")
+
+            conversations: List[ConversationOut] = self.__crud_conversation.get_multi(
+                db=db,
+                filter_param={
+                    "filter": json.dumps({"chatbot_id": str(chatbot_found.id)})
                 },
             )
             return conversations
