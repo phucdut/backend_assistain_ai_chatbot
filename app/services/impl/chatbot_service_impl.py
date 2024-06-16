@@ -274,11 +274,11 @@ class ChatBotServiceImpl(ChatBotService):
         # Chỉ cần xác minh rằng người dùng đã đăng nhập (current_user_membership tồn tại)
         if not current_user_membership:
             logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.delete: User not authenticated"
+                f"Exception in {__name__}.{self.__class__.__name__}.message_with_auth: User not authenticated"
             )
             raise HTTPException(
                 status_code=403,
-                detail="Delete chatbot failed: User not authenticated",
+                detail="Message failed: User not authenticated",
             )
         try:
             conversation = self.__conversation_service.check_conversation(

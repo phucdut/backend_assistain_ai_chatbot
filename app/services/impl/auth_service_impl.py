@@ -252,7 +252,7 @@ class AuthServiceImpl(AuthService):
                 )
                 if is_sended:
                     return RedirectResponse(
-                        url=f"{settings.REDIRECT_FRONTEND_URL}/home?token={session_created.token}"
+                        url=f"{settings.REDIRECT_FRONTEND_URL}/success?token={session_created.token}"
                     )
                 return RedirectResponse(
                     url=f"{settings.REDIRECT_FRONTEND_URL}/error"

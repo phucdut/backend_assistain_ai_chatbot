@@ -17,7 +17,7 @@ from app.schemas.total_data_table_messages_schema import (
     TotalDataTableMessageSchema,
 )
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
-from app.services.abc.admin_dashboard_service import AdminDashboardService
+from app.services.abc.dashboard_service import AdminDashboardService
 
 logger = setup_logger()
 

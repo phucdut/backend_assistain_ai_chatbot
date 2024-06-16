@@ -23,7 +23,7 @@ class EmailServiceImpl(EmailService):
         fm = FastMail(self.__conf)
         mode = 1 if user_info["name"] == user_info["email"] else 2
         message = MessageSchema(
-            subject="Verify Email Address for Ally AI",
+            subject="Verify Email Address for AllyBy AI",
             recipients=[user_info["email"]],
             body=email_verify_template(
                 user_name=user_info["name"],
@@ -48,7 +48,7 @@ class EmailServiceImpl(EmailService):
         user_name = user_info.display_name
         fm = FastMail(self.__conf)
         message = MessageSchema(
-            subject="Reset Password for Ally AI",
+            subject="Reset Password for AllyBy AI",
             recipients=[email],
             body=email_forgot_password_template(
                 user_name=user_name,

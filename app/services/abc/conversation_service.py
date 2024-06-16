@@ -49,6 +49,15 @@ class ConversationService(ABC):
         pass
 
     @abstractmethod
+    def get_all_or_none_with_chatbot_id(
+        self,
+        db: Session,
+        chatbot_id: str,
+        current_user_membership: UserSubscriptionPlan,
+    ) -> Optional[List[ConversationOut]]:
+        pass
+
+    @abstractmethod
     def load_messsages(
         self,
         conversation_id: str,

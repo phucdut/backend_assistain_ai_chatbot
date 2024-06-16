@@ -19,12 +19,12 @@ from app.schemas.total_data_table_messages_schema import (
     TotalDataTableMessageSchema,
 )
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
-from app.services.abc.admin_dashboard_service import AdminDashboardService
-from app.services.impl.admin_dashboard_service_impl import AdminDashboardServiceImpl
+from app.services.abc.dashboard_service import AdminDashboardService
+from app.services.impl.dashboard_service_impl import AdminDashboardServiceImpl
 
 logger = setup_logger()
 
-admin_dashboard_service: AdminDashboardService = AdminDashboardServiceImpl()
+dashboard_service: AdminDashboardService = AdminDashboardServiceImpl()
 
 
 router = APIRouter()
@@ -40,7 +40,7 @@ def get_statistic_table_message_by_filter(
     ),
     db: Session = Depends(deps.get_db),
 ) -> List[ChartDataTableMessageSchema]:
-    return admin_dashboard_service.get_statistic_table_message_by_filter(
+    return dashboard_service.get_statistic_table_message_by_filter(
         db=db,
         filter=filter,
         value=value,
@@ -58,7 +58,7 @@ def get_statistic_table_conversation_by_filter(
     ),
     db: Session = Depends(deps.get_db),
 ) -> List[ChartDataTableConversationSchema]:
-    return admin_dashboard_service.get_statistic_table_conversation_by_filter(
+    return dashboard_service.get_statistic_table_conversation_by_filter(
         db=db,
         filter=filter,
         value=value,
@@ -78,7 +78,7 @@ def get_table_conversation_by_filter(
     ),
     db: Session = Depends(deps.get_db),
 ) -> Optional[TotalDataTableConversationSchema]:
-    return admin_dashboard_service.get_table_conversation_by_filter(
+    return dashboard_service.get_table_conversation_by_filter(
         db=db,
         filter=filter,
         value=value,

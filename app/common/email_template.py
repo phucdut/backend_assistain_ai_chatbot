@@ -1,6 +1,6 @@
 def email_verify_template(user_name: str, redirect_url: str, mode: int) -> str:
     if mode == 1:
-        button_text = "Go to Landing Page"
+        button_text = "Go to Sign in Page"
         button_style = "background-color: #2c2c2c; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px;"
         button_link = redirect_url
     elif mode == 2:
