@@ -16,5 +16,4 @@ class Message(Base):
     message = Column(String)
     latency = Column(Float, default=0)
 
-
     conversation = relationship("Conversation", back_populates="messages")

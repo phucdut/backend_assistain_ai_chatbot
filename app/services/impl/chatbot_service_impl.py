@@ -100,12 +100,25 @@ class ChatBotServiceImpl(ChatBotService):
         )
         # prompt=self.DEFAULT_PROMPT)
 
-        logger.info(f"ChatbotInDB: {chatbot_in_db}")
+        
+        # Check if chatbot name already exists in the database
+        existing_chatbot = self.__crud_chatbot.get_by_name(db=db, name=chatbot_create.chatbot_name, user_id=user_id)
+        if existing_chatbot:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.create_chatbot: Chatbot name already exists"
+            )
+            raise HTTPException(
+                detail="Create Chatbot failed: Chatbot name already exists",
+                status_code=400,
+            )
+        
 
+        # logger.info(f"ChatbotInDB: {chatbot_in_db}")
         try:
             chatbot_created = self.__crud_chatbot.create(
                 db=db, obj_in=chatbot_in_db
             )
+            print(f"chatbot_created: {chatbot_created}")
         except:
             logger.exception(
                 f"Exception in {__name__}.{self.__class__.__name__}.create_chatbot"
@@ -133,6 +146,17 @@ class ChatBotServiceImpl(ChatBotService):
         current_user_membership: UserSubscriptionPlan,
         filter: dict,
     ) -> ChatBotOut:
+        # Check if chatbot name already exists in the database
+        existing_chatbot = self.__crud_chatbot.get_by_name(db=db, name=chatbot_update.chatbot_name)
+        if existing_chatbot:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.update_one_with_filter: Chatbot name already exists"
+            )
+            raise HTTPException(
+                detail="Update Chatbot failed: Chatbot name already exists",
+                status_code=400,
+            )
+        
         try:
             chatbot = self.get_one_with_filter_or_none(db=db, filter=filter)
             if chatbot is None:
@@ -216,6 +240,41 @@ class ChatBotServiceImpl(ChatBotService):
         client_ip: str,
     ) -> MessageOut:
         try:
+            # Check condition
+            chatbot = self.get_one_with_filter_or_none(
+                db=db, filter={"id": chatbot_id}
+            )
+            owner_id = chatbot.user_id
+            chatbots = self.get_all_or_none(db=db, user_id=owner_id)
+            from app.services.impl.user_service_impl import UserServiceImpl
+
+            user_service = UserServiceImpl()
+            owner_plan_id = user_service.get_one_with_u_plan_filter_or_none(
+                db=db, filter={"id": owner_id}
+            ).plan_id
+            from app.services.impl.subscription_plan_service_impl import (
+                SubscriptionPlanServiceImpl,
+            )
+
+            subscription_plan_service = SubscriptionPlanServiceImpl()
+            current_plan = (
+                subscription_plan_service.get_one_with_filter_or_none(
+                    db=db, filter={"id": owner_plan_id}
+                )
+            )
+            total_messages = 0
+            total_tokens = 0
+            for _chatbot in chatbots["results"]:
+                total_messages += _chatbot.total_messages
+                total_tokens += _chatbot.total_tokens
+            if (
+                total_messages > current_plan.message_credits
+                or total_tokens > current_plan.max_character_per_chatbot
+            ):
+                raise HTTPException(
+                    detail="User has reached limitation", status_code=400
+                )
+            # Execution time
             start_time = time.time()
             conversation = self.__conversation_service.check_conversation(
                 db=db,
@@ -235,7 +294,7 @@ class ChatBotServiceImpl(ChatBotService):
             )
             if conversation.is_taken == False:
                 # Handle auto response and add to Message
-                response, chatbot_id = self.handle_message(
+                answer, chatbot_id, completion_token = self.handle_message(
                     db=db,
                     chatbot_id=chatbot_id,
                     conversation_id=conversation_id,
@@ -246,17 +305,82 @@ class ChatBotServiceImpl(ChatBotService):
                 message_form = {
                     "sender_id": chatbot_id,
                     "sender_type": "bot",
-                    "message": response,
+                    "message": answer,
                     "conversation_id": conversation.id,
                     "latency": execution_time,
                 }
                 add_message = self.__crud_message_base.create(
                     db=db, obj_in=message_form
                 )
+
+                print(f"add_message: {add_message}")
+                # Update Chatbot Usage
+                chatbot_update = {
+                    "total_messages": chatbot.total_messages + 1,
+                    "total_tokens": chatbot.total_tokens + completion_token,
+                }
+                chatbot_updated = self.__crud_chatbot.update_one_by(
+                    db=db, filter={"id": chatbot_id}, obj_in=chatbot_update
+                )
                 return add_message
             else:
                 # Handle manual response and add to Message
                 return add_message
+        except Exception as e:
+            print(f"Exception in message: {e}")
+            traceback.print_exc()
+            raise HTTPException(
+                detail=f"Error processing message: {str(e)}", status_code=500
+            )
+
+    def handle_message(
+        self, db: Session, chatbot_id: str, conversation_id: str, message: str
+    ):
+        try:
+            temp_knowledgeBase = []
+            messages = self.__crud_message.get_messages_by_conversation_id(
+                db=db, conversation_id=conversation_id
+            )
+            knowledgeBases = (
+                self.__crud_knowledgeBase.get_knowledgeBase_by_chatbot_id(
+                    db=db, chatbot_id=chatbot_id
+                )
+            )
+            chatbot = self.get_one_with_filter_or_none(
+                db=db, filter={"id": chatbot_id}
+            )
+            # Create response
+            temp_knowledgeBase.append(
+                {"role": "system", "content": chatbot.prompt}
+            )
+            for knowledgeBase in knowledgeBases:
+                temp_knowledgeBase.append(
+                    {
+                        "role": "system",
+                        "content": utils.read_pdf(knowledgeBase["file_path"]),
+                    }
+                )
+            for message in messages:
+                temp_knowledgeBase.append(
+                    {"role": "user", "content": message["message"]}
+                )
+            response = self.client.chat.completions.create(
+                model=chatbot.model,
+                messages=temp_knowledgeBase,
+                max_tokens=chatbot.max_tokens,
+                temperature=chatbot.temperature,
+            )
+            if (
+                not response.choices
+                or not response.choices[0].message.content.strip()
+            ):
+                raise HTTPException(
+                    detail="Empty response from AI model", status_code=500
+                )
+            answer = response.choices[0].message.content
+            # print(f"Exception in handle_message: {answer}")
+            completion_token = response.usage.completion_tokens
+            return answer, chatbot.id, completion_token
         except:
             traceback.print_exc()
             pass
@@ -322,49 +446,6 @@ class ChatBotServiceImpl(ChatBotService):
             traceback.print_exc()
             pass
 
-    def handle_message(
-        self, db: Session, chatbot_id: str, conversation_id: str, message: str
-    ):
-        try:
-            temp_knowledgeBase = []
-            messages = self.__crud_message.get_messages_by_conversation_id(
-                db=db, conversation_id=conversation_id
-            )
-            knowledgeBases = (
-                self.__crud_knowledgeBase.get_knowledgeBase_by_chatbot_id(
-                    db=db, chatbot_id=chatbot_id
-                )
-            )
-            chatbot = self.get_one_with_filter_or_none(
-                db=db, filter={"id": chatbot_id}
-            )
-            # Create response
-            temp_knowledgeBase.append(
-                {"role": "system", "content": chatbot.prompt}
-            )
-            for knowledgeBase in knowledgeBases:
-                temp_knowledgeBase.append(
-                    {
-                        "role": "system",
-                        "content": utils.read_pdf(knowledgeBase["file_path"]),
-                    }
-                )
-            for message in messages:
-                temp_knowledgeBase.append(
-                    {"role": "user", "content": message["message"]}
-                )
-            response = self.client.chat.completions.create(
-                model=chatbot.model,
-                messages=temp_knowledgeBase,
-                max_tokens=chatbot.max_tokens,
-                temperature=chatbot.temperature,
-            )
-            response = response.choices[0].message.content
-            return response, chatbot.id
-        except:
-            traceback.print_exc()
-            pass
-
     def get_all_or_none(
         self,
         db: Session,
@@ -391,3 +472,13 @@ class ChatBotServiceImpl(ChatBotService):
             raise HTTPException(
                 status_code=400, detail="Get all chatbot failed"
             )
+
+    def get_all_or_none_id(self, db: Session, current_user_membership: UserSubscriptionPlan) -> Optional[List[ChatBotOut]]:
+        try:
+            results = self.__crud_chatbot.get_multi(db=db, filter_param={"user_id": current_user_membership.u_id})
+            return results
+        except:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
+            )
+            return None

@@ -213,7 +213,7 @@ def message_chatbot(
     request: Request,
     conversation_id: str,
     db: Session = Depends(deps.get_db),
-):
+)-> MessageOut:
     # client_ip = request.client.host
     # client_ip = request.client.host
     client_ip = "42.118.119.124"

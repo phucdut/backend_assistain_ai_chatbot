@@ -75,7 +75,36 @@ class UserServiceImpl(UserService):
             result: UserOut = UserOut(**user_found.__dict__)
             return result
         return None
-
+    
+    def get_one_with_u_plan_filter_or_none(
+        self, db: Session, filter: dict
+    ):
+        user_found = self.__crud_user.get_one_by(db=db, filter=filter)
+        if user_found:
+            result = UserOut(**user_found.__dict__)
+            user_subscription = crud_user_subscription.get_one_by(db=db, filter={"user_id": user_found.id})
+            from app.services.impl.subscription_plan_service_impl import SubscriptionPlanServiceImpl
+            subscription_plan_service = SubscriptionPlanServiceImpl()
+            plan = subscription_plan_service.get_one_with_filter_or_none(db=db,
+                                                                         filter={"id": user_subscription.plan_id})
+            result.subscription_id = user_subscription.id
+            result.plan_title = plan.plan_title
+            result.remove_label = plan.remove_label
+            result.plan_id = plan.id
+            return result
+            # user_subscription = crud_user_subscription.get_one_by(db=db, filter={"user_id": user_found.id})
+            # _user = {
+            #     'id': user_found.id,
+            #     'email': user_found.email,
+            #     'display_name': user_found.display_name,
+            #     'avatar_url': user_found.avatar_url,
+            #     'is_verified': user_found.is_verified,
+            #     'user_role': user_found.user_role,
+            #     'is_active': user_found.is_active,
+            #     'plan_id': user_subscription.plan_id
+            # }
+            # return _user
+        return None
     def get_edit_one_with_filter_or_none(
         self, db: Session, filter: dict
     ) -> Optional[UserOut]:
@@ -320,3 +349,47 @@ class UserServiceImpl(UserService):
             )
             return result
         return None
+
+    def ban(self, db: Session, user_id: str):
+        try:
+            user_found: UserInDB = self.get_one_with_filter_or_none_db(
+                db=db, filter={"id": user_id}
+            )
+            user_updated = self.__crud_user.update_one_by(
+                db=db, filter={"id": user_id}, obj_in={'is_active': False}
+            )
+        except Exception as user_exec:
+            logger.error(
+                f"Error in {__name__}.{self.__class__.__name__}.update_one_with_filter: {user_exec}"
+            )
+            raise user_exec
+        if user_updated:
+            return JSONResponse(
+                status_code=200, content={"message": "Account Banned"}
+            )
+        else:
+            return JSONResponse(
+                status_code=400, content={"message": "An error occurred"}
+            )
+
+    def unban(self, db: Session, user_id: str):
+        try:
+            user_found: UserInDB = self.get_one_with_filter_or_none_db(
+                db=db, filter={"id": user_id}
+            )
+            user_updated = self.__crud_user.update_one_by(
+                db=db, filter={"id": user_id}, obj_in={'is_active': True}
+            )
+        except Exception as user_exec:
+            logger.error(
+                f"Error in {__name__}.{self.__class__.__name__}.update_one_with_filter: {user_exec}"
+            )
+            raise user_exec
+        if user_updated:
+            return JSONResponse(
+                status_code=200, content={"message": "Account Unbanned"}
+            )
+        else:
+            return JSONResponse(
+                status_code=400, content={"message": "An error occurred"}
+            )

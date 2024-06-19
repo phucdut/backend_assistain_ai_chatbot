@@ -1,7 +1,9 @@
 import re
+import uuid
 from datetime import datetime
 from typing import List, Optional
 from fastapi import Depends, HTTPException
+from app.common import generate, send_email, utils
 
 from fastapi import Request
 from fastapi.responses import RedirectResponse
@@ -16,6 +18,10 @@ from app.crud.crud_user import crud_user
 from app.crud.crud_subscription_plan import crud_subscription_plan
 from app.crud.crud_user_subscription import crud_user_subscription
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
+from app.services.abc.email_service import EmailService
+from app.services.abc.revenue_service import RevenueService
+from app.services.abc.user_session_service import UserSessionService
+from app.services.impl.email_service_impl import EmailServiceImpl
 
 from app.schemas.user_subscription import (
     UserSubscriptionUpdate,
@@ -37,6 +43,7 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
         self.__crud_user = crud_user
         self.__crud_subscription_plan = crud_subscription_plan
         self.__crud_user_subscription = crud_user_subscription
+        self.__email_service: EmailService = EmailServiceImpl()
 
     def read_root(
         self, vnp_Amount: str, vnp_TxnRef: str, vnp_OrderInfo: str
@@ -58,9 +65,10 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
         }
         return RedirectResponse(self.__vnpay.get_payment_url(req))
 
-    def read_item(self, request: Request, db: Session) -> RedirectResponse:
+    async def read_item(self, request: Request, db: Session) -> RedirectResponse:
         response = dict(request.query_params)
         res_vnp_Amount = str(int(response.get("vnp_Amount")) / 100)
+        order_number = response.get("vnp_Amount")
 
         if not self.__vnpay.validate_response(response):
             logger.error("Payment validation failed")
@@ -82,9 +90,9 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
                     "Không tìm thấy user_id và subscription_plan_id trong vnp_OrderInfo"
                 )
 
-            logger.info(
-                "Payment validation succeeded", user_id, subscription_plan_id
-            )
+            # logger.info(
+            #     "Payment validation succeeded", user_id, subscription_plan_id
+            # )
             user_subscription = self.get_edit_one_with_filter_or_none(
                 db=db, filter={"user_id": user_id}
             )
@@ -109,16 +117,80 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
                 return RedirectResponse(
                     f"{settings.REDIRECT_FRONTEND_URL}/upgrade-membership/failure-payment/?payment-failure?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}"
                 )
+            # logger.info("Payment validation succeeded")
+            if upgrade_membership:
+                result: UserSubscriptionOut = UserSubscriptionOut(
+                    **upgrade_membership.__dict__
+                )
+                # Send email
+                from app.services.impl.user_service_impl import UserServiceImpl
+                from app.services.impl.subscription_plan_service_impl import (
+                    SubscriptionPlanServiceImpl,
+                )
+
+                user_service = UserServiceImpl()
+                subscription_plan_service = SubscriptionPlanServiceImpl()
+                user = user_service.get_one_with_filter_or_none(
+                    db=db, filter={"id": user_id}
+                )
+                user_info = {
+                    "email": user.email,
+                    "display_name": user.display_name,
+                }
+                plan_info = (
+                    subscription_plan_service.get_one_with_filter_or_none(
+                        db=db, filter={"id": subscription_plan_id}
+                    )
+                )
+                order_info = {
+                    "order_number": order_number,
+                    "order_date": str(datetime.now()).split(" ")[0],
+                    "payment_method": "CARD",
+                    "plan_title": plan_info.plan_title.replace(
+                        "_", " "
+                    ).title(),
+                    "plan_price": plan_info.plan_price,
+                }
+                is_sended = await self.__email_service.send_receipt_email(
+                    user_info=user_info, order_info=order_info
+                )
+
+                from app.services.impl.revenue_service_impl import (
+                    RevenueServiceImpl,
+                )
+                from app.schemas.revenue import RevenueUpdate, RevenueCreate
+
+                revenue_service = RevenueServiceImpl()
+                revenue_update = RevenueUpdate(
+                    subscription_plan_id=uuid.UUID(subscription_plan_id),
+                    income=plan_info.plan_price,
+                )
+                revenue_updated = revenue_service.update_revenue_by_plan(
+                    db=db,
+                    subscription_plan_id=uuid.UUID(subscription_plan_id),
+                    revenue_update=revenue_update,
+                )
         except Exception as e:
             logger.error(f"Error: {e}")
             return RedirectResponse(
                 f"{settings.REDIRECT_FRONTEND_URL}/upgrade-membership/failure-payment/?payment-failure?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}"
             )
-
-        logger.info("Payment validation succeeded")
         return RedirectResponse(
             f"{settings.REDIRECT_FRONTEND_URL}/upgrade-membership/success-payment/?payment-success?vnp_Amount={res_vnp_Amount}&vnp_TxnRef={response['vnp_TxnRef']}&vnp_TransactionNo={response['vnp_TransactionNo']}"
         )
+
+    # async def get_mail_one_with_filter_or_none(
+    #     self, db: Session, user_info: dict, order_info: str
+    # ):
+    #     try:
+    #         is_sended = await self.__email_service.send_receipt_email(
+    #             user_info=user_info, order_info=order_info
+    #         )
+    #     except:
+    #         logger.exception(
+    #             f"Exception in {__name__}.{self.__class__.__name__}.get_update_one_with_filter_or_none"
+    #         )
+    #         return None
 
     def get_edit_one_with_filter_or_none(
         self, db: Session, filter: dict

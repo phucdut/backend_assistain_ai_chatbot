@@ -101,3 +101,19 @@ class UserService(ABC):
         filter2: dict,
     ) -> UserSubscriptionOut:
         pass   
+
+    @abstractmethod
+    def ban(
+        self,
+        db: Session,
+        user_id: str,
+    ):
+        pass   
+
+    @abstractmethod
+    def unban(
+        self,
+        db: Session,
+        user_id: str,
+    ):
+        pass   

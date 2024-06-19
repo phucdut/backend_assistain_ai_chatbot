@@ -3,7 +3,8 @@ from fastapi_mail import FastMail, MessageSchema
 from sqlalchemy.orm import Session
 
 from app.common.email_template import (email_forgot_password_template,
-                                       email_verify_template)
+                                       email_verify_template,
+                                       email_receipt_template)
 from app.common.logger import setup_logger
 from app.core.email_connection import conf
 from app.schemas.user import UserOut
@@ -62,5 +63,29 @@ class EmailServiceImpl(EmailService):
         except Exception as e:
             logger.error(
                 f"Error in {__name__}.{self.__class__.__name__}.send_reset_password_email: {e}"
+            )
+            return False
+        
+    async def send_receipt_email(self, user_info: dict, order_info: dict) -> bool:
+        fm = FastMail(self.__conf)
+        message = MessageSchema(
+            subject="Thank you for your purchase",
+            recipients=[user_info["email"]],
+            body=email_receipt_template(
+                display_name=user_info["display_name"],
+                plan_title=order_info['plan_title'],
+                order_number=order_info['order_number'],
+                order_date=order_info['order_date'],
+                payment_method=order_info['payment_method'],
+                plan_price=order_info['plan_price']
+            ),
+            subtype="html",
+        )
+        try:
+            await fm.send_message(message)
+            return True
+        except Exception as e:
+            logger.error(
+                f"Error in {__name__}.{self.__class__.__name__}.send_verification_email: {e}"
             )
             return False

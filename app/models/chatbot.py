@@ -21,24 +21,31 @@ class ChatBot(Base):
         "and any messages that you get be regarding that. Please answer any "
         "questions and requests having in mind the first prompt ",
     )
-    chatbot_config = Column(JSON, default={
-        "font_family": "Default",
-        "font_size": 14,
-        "input_background": "#FFFFFF",
-        "background_color": "#FFFFFF",
-        "user_font_color": "#FFFFFF",
-        "prompts_font_color": "#272727",
-        "ally_font_color": "#272727",
-        "disclaimer_color": "#676767",
-        "input_placeholder": "Write your message",
-        "disclaimer_text": "",
-        "chatbot_logo": "https://i.imgur.com/KWvPAWC.png",
-        "website_link": "https://ally.com",
-        "powered_by_remove": 0
-    })
-    user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    chatbot_config = Column(
+        JSON,
+        default={
+            "font_family": "Default",
+            "font_size": 14,
+            "input_background": "#FFFFFF",
+            "background_color": "#FFFFFF",
+            "user_font_color": "#FFFFFF",
+            "prompts_font_color": "#272727",
+            "ally_font_color": "#272727",
+            "disclaimer_color": "#676767",
+            "input_placeholder": "Write your message",
+            "disclaimer_text": "",
+            "chatbot_logo": "https://i.imgur.com/KWvPAWC.png",
+            "website_link": "https://ally.com",
+            "powered_by_remove": 0,
+        },
     )
-    knowledgebase = relationship("KnowledgeBase", back_populates="chatbot")
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    total_messages = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
+    knowledge_bases = relationship("KnowledgeBase", back_populates="chatbot")
     conversations = relationship("Conversation", back_populates="chatbot")
     user = relationship("User", back_populates="chatbots")
