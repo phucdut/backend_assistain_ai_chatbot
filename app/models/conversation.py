@@ -22,7 +22,7 @@ class Conversation(Base):
 
     user = relationship("User", back_populates="conversations")
 
-    chatbot = relationship("ChatBot", back_populates="conversations")
+    chatbot = relationship("ChatBot", back_populates="conversations") #ĐỔi thành chatbot
 
     # conversation 1-n messages
 

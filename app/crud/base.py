@@ -225,3 +225,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.commit()
         db.refresh(model)
         return model
+
+    def get_by_name(self, db: Session, name: str, user_id: str) -> Optional[ModelType]:
+        return db.query(self.model).filter(self.model.chatbot_name == name, self.model.user_id == user_id).first()
+    
+    def get_by_name_knowledge_base(self, db: Session, name: str, chatbot_id: str) -> Optional[ModelType]:
+        return db.query(self.model).filter(self.model.title == name, self.model.chatbot_id == chatbot_id).first()
+    
+    def get_by_name_pl(self, db: Session, name: str) -> Optional[ModelType]:
+        return db.query(self.model).filter(self.model.plan_title == name).first()

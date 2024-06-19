@@ -30,6 +30,18 @@ class SubscriptionPlanServiceImpl(SubscriptionPlanService):
         )
         if subscription_plan_found is not None:
             return subscription_plan_found
+        
+        # # Check if chatbot name already exists in the database
+        # existing_subscription_plan = self.__crud_subscription_plan.get_by_name_pl(db=db, name=subscription_plan_create.plan_title)
+        # if existing_subscription_plan:
+        #     logger.exception(
+        #         f"Exception in {__name__}.{self.__class__.__name__}.create_plan: Plan title already exists"
+        #     )
+        #     raise HTTPException(
+        #         detail="Create subscription plan failed: Plan title already exists",
+        #         status_code=400,
+        #     )
+        
         try:
             subscription_plan_created = self.__crud_subscription_plan.create(
                 db=db, obj_in=subscription_plan_create
@@ -79,6 +91,18 @@ class SubscriptionPlanServiceImpl(SubscriptionPlanService):
     def update_one_with_filter(
         self, db: Session, filter: dict, subscription_plan_update: SubscriptionPlanUpdate
     ) -> SubscriptionPlanOut:
+        
+        # # Check if chatbot name already exists in the database
+        # existing_subscription_plan = self.__crud_subscription_plan.get_by_name_pl(db=db, name=subscription_plan_update.plan_title)
+        # if existing_subscription_plan:
+        #     logger.exception(
+        #         f"Exception in {__name__}.{self.__class__.__name__}.create: Plan title already exists"
+        #     )
+        #     raise HTTPException(
+        #         detail="Update subscription plan failed: Plan title already exists",
+        #         status_code=400,
+        #     )
+        
         try:
             subscription_plan_updated = self.__crud_subscription_plan.update_one_by(
                 db=db, filter=filter, obj_in=subscription_plan_update

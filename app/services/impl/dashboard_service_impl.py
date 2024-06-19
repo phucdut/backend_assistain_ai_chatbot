@@ -16,6 +16,9 @@ from app.schemas.chart_data_table_messages_schema import (
 from app.schemas.total_data_table_messages_schema import (
     TotalDataTableMessageSchema,
 )
+from app.schemas.total_data_table_revenue import (
+    TotalDataTableRevenueSchema,
+)
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
 from app.services.abc.dashboard_service import AdminDashboardService
 
@@ -35,8 +38,10 @@ class AdminDashboardServiceImpl(AdminDashboardService):
         current_user_membership: UserSubscriptionPlan,
     ) -> List[ChartDataTableMessageSchema]:
         try:
-            return self.__crud_admin_dashboard.get_table_message_capital_by_filter(
-                db, filter, value, conversation_id
+            return (
+                self.__crud_admin_dashboard.get_table_message_capital_by_filter(
+                    db, filter, value, conversation_id
+                )
             )
         except Exception as e:
             logger.exception(
@@ -62,7 +67,6 @@ class AdminDashboardServiceImpl(AdminDashboardService):
             )
             return []
 
-
     def get_table_conversation_by_filter(
         self,
         db: Session,
@@ -78,5 +82,22 @@ class AdminDashboardServiceImpl(AdminDashboardService):
         except Exception as e:
             logger.exception(
                 f"Exception in {__name__}.{self.__class__.__name__}.get_table_conversation_by_filter: {e}"
+            )
+            return []
+
+    def get_revenue_by_filter(
+        self,
+        db: Session,
+        filter: str,
+        value: str,
+        current_user_membership: UserSubscriptionPlan,
+    ) -> Optional[TotalDataTableRevenueSchema]:
+        try:
+            return self.__crud_admin_dashboard.get_total_revenue_by_filter(
+                db, filter, value
+            )
+        except Exception as e:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.get_revenue_by_filter: {e}"
             )
             return []

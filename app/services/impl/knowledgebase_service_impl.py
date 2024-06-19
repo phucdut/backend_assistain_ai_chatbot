@@ -34,6 +34,16 @@ class KnowledgeBaseServiceImpl(KnowledgeBaseService):
     def create(
         self, db: Session, chatbot_id: str, file_path: str, file_name: str
     ) -> KnowledgeBaseOut:
+        # Check if chatbot name already exists in the database
+        existing_knowledge_base = self.__crud_knowledgeBase.get_by_name_knowledge_base(db=db, name=file_name, chatbot_id=chatbot_id)
+        if existing_knowledge_base:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.create: Knowledge base title already exists"
+            )
+            raise HTTPException(
+                detail="Create knowledge base failed: Knowledge base title already exists",
+                status_code=400,
+            )
         try:
             content_data = utils.read_pdf(file_path)
             knowledge_base_data = {

@@ -1,5 +1,6 @@
 from sqlalchemy import Boolean, Column, Float, Integer, String
 from sqlalchemy.orm import relationship
+from app.models.revenue import Revenue
 
 from app.db.base_class import Base
 
@@ -16,3 +17,4 @@ class SubscriptionPlan(Base):
     remove_label = Column(Boolean, nullable=False, default=False)
 
     user_subscriptions = relationship("UserSubscription", back_populates="plan")
+    revenue = relationship("Revenue", back_populates="plan")

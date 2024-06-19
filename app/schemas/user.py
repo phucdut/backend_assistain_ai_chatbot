@@ -53,10 +53,15 @@ class UserOut(UserBase):
     payment_information: Optional[str]
     is_verified: bool
     user_role: str  
+    
     is_active: bool
     created_at: datetime
     updated_at: datetime
     deleted_at: Optional[datetime]
+    subscription_id: Optional[str] = None
+    plan_id: Optional[str] = None
+    plan_title: Optional[str] = None
+    remove_label: Optional[bool] = None
 
     class Config:
         orm_mode = True

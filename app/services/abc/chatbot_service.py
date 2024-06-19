@@ -90,3 +90,7 @@ class ChatBotService(ABC):
         current_user_membership: UserSubscriptionPlan,
     ):
         pass
+
+    @abstractmethod
+    def get_all_or_none_id(self, db: Session, current_user_membership: UserSubscriptionPlan) -> Optional[List[ChatBotOut]]:
+        pass

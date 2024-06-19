@@ -18,6 +18,7 @@ origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
     "http://localhost:3000",
+    "http://192.168.200.204:3000",
     "http://192.168.1.2:3000",
     "http://localhost:8080",
     "https://1420-2402-800-6205-305c-d18d-e7a-3231-20dd.ngrok-free.app",

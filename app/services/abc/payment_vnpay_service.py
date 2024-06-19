@@ -22,7 +22,7 @@ class PaymentVnPayService(ABC):
         pass
 
     @abstractmethod
-    def get_all_or_none(
+    async def get_all_or_none(
         self, db: Session, current_user_membership: UserSubscriptionPlan
     ) -> Optional[List[UserSubscriptionOut]]:
         pass

@@ -15,6 +15,9 @@ from app.schemas.chart_data_table_messages_schema import (
 from app.schemas.total_data_table_messages_schema import (
     TotalDataTableMessageSchema,
 )
+from app.schemas.total_data_table_revenue import (
+    TotalDataTableRevenueSchema, 
+)
 from app.schemas.user_subscription_plan import UserSubscriptionPlan
 
 
@@ -52,3 +55,14 @@ class AdminDashboardService(ABC):
         current_user_membership: UserSubscriptionPlan,
     ) -> Optional[TotalDataTableConversationSchema]:
         pass
+
+    @abstractmethod
+    def get_revenue_by_filter(
+        self,
+        db: Session,
+        filter: str,
+        value: str,
+        current_user_membership: UserSubscriptionPlan,
+    ) -> Optional[TotalDataTableRevenueSchema]:
+        pass
+

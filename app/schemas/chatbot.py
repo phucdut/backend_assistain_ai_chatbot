@@ -26,6 +26,8 @@ class ChatBotUpdate(ChatBotBase):
     is_default: Optional[bool] = None
     prompt: Optional[str] = None
     chatbot_config: Optional[dict] = None
+    total_messages: Optional[int] = None
+    total_tokens: Optional[int] = None
 
 
 class ChatBotOut(ChatBotBase):
@@ -38,6 +40,8 @@ class ChatBotOut(ChatBotBase):
     is_default: bool
     prompt: str
     chatbot_config: dict
+    total_messages: int
+    total_tokens: int
 
     class Config:
         orm_mode = True

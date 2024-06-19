@@ -16,6 +16,10 @@ from app.schemas.chart_data_table_messages_schema import (
 from app.schemas.total_data_table_messages_schema import (
     TotalDataTableMessageSchema,
 )
+from app.schemas.total_data_table_revenue import (
+    TotalDataTableRevenueSchema,
+)
+
 
 logger = setup_logger()
 
@@ -409,6 +413,57 @@ ORDER BY
 """
 
 
+# Average latency  of a specific day
+GET_REVENUE_OF_SPECIFIC_DAY = f"""
+SELECT
+	TO_CHAR(created_at, 'YYYY-MM-DD') AS selected_day,
+    COALESCE(SUM(income), 0) AS {TotalDataTableRevenueSchema.REVENUE_COST}
+FROM
+    revenue
+WHERE
+    income IS NOT NULL
+    AND TO_CHAR(created_at, 'YYYY-MM-DD') = :date
+GROUP BY
+    TO_CHAR(created_at, 'YYYY-MM-DD')
+ORDER BY
+    selected_day
+"""
+
+# Average latency  of a specific day
+GET_REVENUE_OF_SPECIFIC_MONTH = f"""
+SELECT
+	TO_CHAR(created_at, 'YYYY-MM') AS selected_month,
+    COALESCE(SUM(income), 0) AS {TotalDataTableRevenueSchema.REVENUE_COST}
+FROM
+    revenue
+WHERE
+    income IS NOT NULL
+    AND TO_CHAR(created_at, 'YYYY-MM') = :month
+GROUP BY
+    TO_CHAR(created_at, 'YYYY-MM')
+ORDER BY
+    selected_month
+
+"""
+
+# Average latency  of a specific day
+GET_REVENUE_OF_SPECIFIC_YEAR = f"""
+SELECT
+	TO_CHAR(created_at, 'YYYY') AS selected_year,
+    COALESCE(SUM(income), 0) AS {TotalDataTableRevenueSchema.REVENUE_COST}
+FROM
+    revenue
+WHERE
+    income IS NOT NULL
+    AND TO_CHAR(created_at, 'YYYY') = :year
+GROUP BY
+    TO_CHAR(ended_at, 'YYYY')
+ORDER BY
+    selected_year
+
+"""
+
+
 class CRUDAdminDashboard:
     def get_table_message_capital_by_filter(
         self, db: Session, filter: str, value: str, conversation_id: str
@@ -534,6 +589,41 @@ class CRUDAdminDashboard:
         logger.info(
             f"Get total visitor, average rating score by {filter} {value} successfully"
         )
+        return total_data
+
+    def get_total_revenue_by_filter(
+        self, db: Session, filter: str, value: str
+    ) -> Optional[TotalDataTableRevenueSchema]:
+        if filter == "day":
+            result_proxy = db.execute(
+                text(GET_REVENUE_OF_SPECIFIC_DAY),
+                {"date": value},
+            )
+        elif filter == "month":
+            result_proxy = db.execute(
+                text(GET_REVENUE_OF_SPECIFIC_MONTH),
+                {"month": value},
+            )
+        elif filter == "year":
+            result_proxy = db.execute(
+                text(GET_REVENUE_OF_SPECIFIC_YEAR),
+                {"year": value},
+            )
+        else:
+            logger.error(f"Filter {filter} is not valid")
+            return None
+
+        column_names = result_proxy.keys()
+        results = result_proxy.fetchone()
+        if results is None or not results:
+            return None
+        result_dict = dict(zip(column_names, results))
+        if not result_dict:
+            return None
+        total_data = TotalDataTableRevenueSchema(
+            revenue = result_dict[TotalDataTableRevenueSchema.REVENUE_COST],
+        )
+        logger.info(f"Get total revenue by {filter} {value} successfully")
         return total_data
 
 
