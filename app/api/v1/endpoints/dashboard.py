@@ -71,6 +71,24 @@ def get_statistic_table_conversation_by_filter(
 
 
 
+@router.get("/chart/{filter}/{value}/message/")
+def get_statistic_table_message_by_filter():
+    chart = []
+    chart_out = {
+        "chart": chart,
+    }
+    return chart
+
+@router.get("/chart/{filter}/{value}/conversation/")
+def get_statistic_table_conversation_by_filter():
+    chart = []
+    chart_out = {
+        "chart": chart,
+    }
+    return chart
+
+
+
 @router.get("/conversation/{filter}/{value}/{chatbot_id}", response_model=Optional[TotalDataTableConversationSchema])
 def get_table_conversation_by_filter(
     filter: str,

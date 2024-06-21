@@ -30,6 +30,6 @@ class RevenueService(ABC):
     def get_one_with_filter_or_none(self, db: Session, filter: dict) -> Optional[RevenueOut]:
         pass
 
-    @abstractmethod
-    def get_all_or_none(self, db: Session):
-        pass
+    # @abstractmethod
+    # def get_all_or_none(self, db: Session):
+    #     pass

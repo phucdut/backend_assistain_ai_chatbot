@@ -24,7 +24,11 @@ from app.schemas.subscription_plan import (
 )
 
 from app.services.abc.user_service import UserService
+from app.services.abc.user_subscription_service import UserSubscriptionService
 from app.services.impl.user_service_impl import UserServiceImpl
+from app.services.impl.user_subscription_service_impl import (
+    UserSubscriptionServiceImpl,
+)
 from app.schemas.user import (
     UserCreate,
     UserInDB,
@@ -47,6 +51,7 @@ from app.services.impl.subscription_plan_service_impl import (
 router = APIRouter()
 
 user_service = UserServiceImpl()
+user_subscription_service = UserSubscriptionServiceImpl()
 subscription_plan_service = SubscriptionPlanServiceImpl()
 payment_vnpay_service: PaymentVnPayService = PaymentVnPayServiceImpl()
 
@@ -101,6 +106,7 @@ async def change_password(
         user_id=user_id,
         password=change_password,
     )
+
 
 @router.get("/get-all", status_code=status.HTTP_200_OK)
 def get_all(
@@ -157,3 +163,25 @@ def get_one(
             status_code=404, detail="User subscription not found"
         )
     return user_subscription
+
+
+@router.get(
+    "/reset-membership/{user_id}",
+    status_code=status.HTTP_200_OK,
+)
+def update(
+    user_id: str,
+    response_model=Optional[UserSubscriptionOut],
+    current_user_membership: UserSubscriptionPlan = Depends(
+        oauth2.get_current_user_membership_info_by_token
+    ),
+    db: Session = Depends(deps.get_db),
+) -> UserSubscriptionOut:
+    reset_user_subscription_plan = (
+        user_subscription_service.update_one_with_filter_expire_at(
+            db=db,
+            current_user_membership=current_user_membership,
+            filter={"user_id": user_id},
+        )
+    )
+    return reset_user_subscription_plan

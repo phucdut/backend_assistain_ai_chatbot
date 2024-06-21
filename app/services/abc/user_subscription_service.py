@@ -8,7 +8,7 @@ from app.schemas.user_subscription import (
     UserSubscriptionOut,
     UserSubscriptionUpdate,
 )
-
+from app.schemas.user_subscription_plan import UserSubscriptionPlan
 
 class UserSubscriptionService(ABC):
 
@@ -33,5 +33,11 @@ class UserSubscriptionService(ABC):
     @abstractmethod
     def update_one_with_filter(
         self, db: Session, filter: dict, user_subscription: UserSubscriptionUpdate
+    ) -> UserSubscriptionOut:
+        pass
+
+    @abstractmethod
+    def update_one_with_filter_expire_at(
+        self, db: Session, filter: dict , current_user_membership: UserSubscriptionPlan
     ) -> UserSubscriptionOut:
         pass

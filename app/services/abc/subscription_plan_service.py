@@ -49,6 +49,12 @@ class SubscriptionPlanService(ABC):
         pass
 
     @abstractmethod
+    def get_all_or_none_not_auth(
+        self, db: Session
+    ) -> Optional[List[SubscriptionPlanOut]]:
+        pass
+
+    @abstractmethod
     def delete(
         self,
         db: Session,

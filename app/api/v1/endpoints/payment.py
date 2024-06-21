@@ -27,7 +27,9 @@ def read_root(
     Ngày phát hành: 07/15
     Mật khẩu OTP: 123456
     """
-    return payment_vnpay_service.read_root(vnp_Amount, vnp_TxnRef, vnp_OrderInfo)
+    return payment_vnpay_service.read_root(
+        vnp_Amount, vnp_TxnRef, vnp_OrderInfo
+    )
 
 
 @router.get("/payment-return", status_code=status.HTTP_200_OK)

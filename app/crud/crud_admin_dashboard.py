@@ -362,55 +362,55 @@ ORDER BY
 """
 
 
-# Average latency  of a specific day
-GET_LATENCY_OF_SPECIFIC_DAY = f"""
-SELECT
-	TO_CHAR(created_at, 'YYYY-MM-DD') AS selected_day,
-    COALESCE(AVG(rate.latency_average), 0) AS {ChartDataTableMessageSchema.LATENCY_AVERAGE}
-FROM
-    messages
-WHERE
-    latency IS NOT NULL
-    AND TO_CHAR(created_at, 'YYYY-MM-DD') = :date
-GROUP BY
-    TO_CHAR(created_at, 'YYYY-MM-DD')
-ORDER BY
-    selected_day
-"""
+# # Average latency  of a specific day
+# GET_LATENCY_OF_SPECIFIC_DAY = f"""
+# SELECT
+# 	TO_CHAR(created_at, 'YYYY-MM-DD') AS selected_day,
+#     COALESCE(AVG(rate.latency_average), 0) AS {ChartDataTableMessageSchema.LATENCY_AVERAGE}
+# FROM
+#     messages
+# WHERE
+#     latency IS NOT NULL
+#     AND TO_CHAR(created_at, 'YYYY-MM-DD') = :date
+# GROUP BY
+#     TO_CHAR(created_at, 'YYYY-MM-DD')
+# ORDER BY
+#     selected_day
+# """
 
-# Average latency  of a specific day
-GET_LATENCY_OF_SPECIFIC_MONTH = f"""
-SELECT
-	TO_CHAR(created_at, 'YYYY-MM') AS selected_month,
-    COALESCE(AVG(rate.latency_average), 0) AS {ChartDataTableMessageSchema.LATENCY_AVERAGE}
-FROM
-    messages
-WHERE
-    latency IS NOT NULL
-    AND TO_CHAR(created_at, 'YYYY-MM') = :month
-GROUP BY
-    TO_CHAR(created_at, 'YYYY-MM')
-ORDER BY
-    selected_month
+# # Average latency  of a specific day
+# GET_LATENCY_OF_SPECIFIC_MONTH = f"""
+# SELECT
+# 	TO_CHAR(created_at, 'YYYY-MM') AS selected_month,
+#     COALESCE(AVG(rate.latency_average), 0) AS {ChartDataTableMessageSchema.LATENCY_AVERAGE}
+# FROM
+#     messages
+# WHERE
+#     latency IS NOT NULL
+#     AND TO_CHAR(created_at, 'YYYY-MM') = :month
+# GROUP BY
+#     TO_CHAR(created_at, 'YYYY-MM')
+# ORDER BY
+#     selected_month
 
-"""
+# """
 
-# Average latency  of a specific day
-GET_LATENCY_OF_SPECIFIC_YEAR = f"""
-SELECT
-	TO_CHAR(created_at, 'YYYY') AS selected_year,
-    COALESCE(AVG(rate.latency_average), 0) AS {ChartDataTableMessageSchema.LATENCY_AVERAGE}
-FROM
-    conversations
-WHERE
-    latency IS NOT NULL
-    AND TO_CHAR(created_at, 'YYYY') = :year
-GROUP BY
-    TO_CHAR(ended_at, 'YYYY')
-ORDER BY
-    selected_year
+# # Average latency  of a specific day
+# GET_LATENCY_OF_SPECIFIC_YEAR = f"""
+# SELECT
+# 	TO_CHAR(created_at, 'YYYY') AS selected_year,
+#     COALESCE(AVG(rate.latency_average), 0) AS {ChartDataTableMessageSchema.LATENCY_AVERAGE}
+# FROM
+#     conversations
+# WHERE
+#     latency IS NOT NULL
+#     AND TO_CHAR(created_at, 'YYYY') = :year
+# GROUP BY
+#     TO_CHAR(ended_at, 'YYYY')
+# ORDER BY
+#     selected_year
 
-"""
+# """
 
 
 # Average latency  of a specific day
@@ -457,7 +457,7 @@ WHERE
     income IS NOT NULL
     AND TO_CHAR(created_at, 'YYYY') = :year
 GROUP BY
-    TO_CHAR(ended_at, 'YYYY')
+    TO_CHAR(created_at, 'YYYY')
 ORDER BY
     selected_year
 

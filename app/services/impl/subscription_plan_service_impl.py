@@ -150,6 +150,20 @@ class SubscriptionPlanServiceImpl(SubscriptionPlanService):
             )
             return None
         
+    def get_all_or_none_not_auth(
+        self, db: Session
+    ) -> Optional[List[SubscriptionPlanOut]]:
+        try:
+            results = self.__crud_subscription_plan.get_multi(
+                db=db
+            )
+            return results
+        except:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.get_all_or_none"
+            )
+            return None
+        
     def delete(
         self,
         db: Session,
