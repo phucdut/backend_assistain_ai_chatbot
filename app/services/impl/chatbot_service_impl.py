@@ -147,15 +147,15 @@ class ChatBotServiceImpl(ChatBotService):
         filter: dict,
     ) -> ChatBotOut:
         # Check if chatbot name already exists in the database
-        existing_chatbot = self.__crud_chatbot.get_by_name(db=db, name=chatbot_update.chatbot_name)
-        if existing_chatbot:
-            logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.update_one_with_filter: Chatbot name already exists"
-            )
-            raise HTTPException(
-                detail="Update Chatbot failed: Chatbot name already exists",
-                status_code=400,
-            )
+        # existing_chatbot = self.__crud_chatbot.get_by_name(db=db, name=chatbot_update.chatbot_name)
+        # if existing_chatbot:
+        #     logger.exception(
+        #         f"Exception in {__name__}.{self.__class__.__name__}.update_one_with_filter: Chatbot name already exists"
+        #     )
+        #     raise HTTPException(
+        #         detail="Update Chatbot failed: Chatbot name already exists",
+        #         status_code=400,
+        #     )
         
         try:
             chatbot = self.get_one_with_filter_or_none(db=db, filter=filter)

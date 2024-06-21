@@ -1,6 +1,6 @@
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import Depends, HTTPException
 from app.common import generate, send_email, utils
@@ -65,7 +65,7 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
         }
         return RedirectResponse(self.__vnpay.get_payment_url(req))
 
-    async def read_item(self, request: Request, db: Session) -> RedirectResponse:
+    def read_item(self, request: Request, db: Session) -> RedirectResponse:
         response = dict(request.query_params)
         res_vnp_Amount = str(int(response.get("vnp_Amount")) / 100)
         order_number = response.get("vnp_Amount")
@@ -80,19 +80,39 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
             url = response["vnp_OrderInfo"]
             # logger.info("Payment validation succeeded", url)
             match = re.search(
-                r"user_id=(\S+)\s+subscription_plan_id=(\S+)", url
+                r"user_id=(\S+)\s+subscription_plan_id=(\S+)\s+date=(\S+)", url
             )
             if match:
                 user_id = match.group(1)
                 subscription_plan_id = match.group(2)
+                date = match.group(3)
             else:
                 print(
-                    "Không tìm thấy user_id và subscription_plan_id trong vnp_OrderInfo"
+                    "Cannot find user_id, subscription_plan_id and date in vnp_OrderInfo."
                 )
 
             # logger.info(
-            #     "Payment validation succeeded", user_id, subscription_plan_id
+            #     "Payment validation succeeded", user_id, subscription_plan_id, date
             # )
+            from app.services.impl.user_service_impl import UserServiceImpl
+            from app.services.impl.subscription_plan_service_impl import (
+                SubscriptionPlanServiceImpl,
+            )
+
+            user_service = UserServiceImpl()
+            subscription_plan_service = SubscriptionPlanServiceImpl()
+            user = user_service.get_one_with_filter_or_none(
+                db=db, filter={"id": user_id}
+            )
+            user_info = {
+                "email": user.email,
+                "display_name": user.display_name,
+            }
+            plan_info = (
+                subscription_plan_service.get_one_with_filter_or_none(
+                    db=db, filter={"id": subscription_plan_id}
+                )
+            )
             user_subscription = self.get_edit_one_with_filter_or_none(
                 db=db, filter={"user_id": user_id}
             )
@@ -105,11 +125,22 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
                     status_code=404,
                 )
 
+            # Determine the expiry date based on the subscription plan title
+            expire_at = datetime.now() + timedelta(days=30)  # Default 30 days
+            if date == "year":
+                expire_at = datetime.now() + timedelta(days=365)
+
+            logger.info(
+                "Payment validation succeeded", expire_at
+            )
+
             upgrade_membership = self.__crud_user_subscription.update_one_by(
                 db=db,
                 filter={"user_id": user_id},
                 obj_in=UserSubscriptionUpdate(
-                    plan_id=subscription_plan_id, updated_at=datetime.now()
+                    plan_id=subscription_plan_id, 
+                    updated_at=datetime.now(), 
+                    expire_at=expire_at
                 ),
             )
             if not upgrade_membership:
@@ -151,9 +182,9 @@ class PaymentVnPayServiceImpl(PaymentVnPayService):
                     ).title(),
                     "plan_price": plan_info.plan_price,
                 }
-                is_sended = await self.__email_service.send_receipt_email(
-                    user_info=user_info, order_info=order_info
-                )
+                # is_sended = await self.__email_service.send_receipt_email(
+                #     user_info=user_info, order_info=order_info
+                # )
 
                 from app.services.impl.revenue_service_impl import (
                     RevenueServiceImpl,

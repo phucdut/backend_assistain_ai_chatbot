@@ -84,6 +84,15 @@ def get_all(
     )
     return user_subscription_plan
 
+@router.get("/get-all-not-auth", status_code=status.HTTP_200_OK)
+def get_all(
+    db: Session = Depends(deps.get_db),
+):
+    user_subscription_plan = subscription_plan_service.get_all_or_none_not_auth(
+        db=db
+    )
+    return user_subscription_plan
+
 
 @router.put(
     "/edit-sub-plan/{plan_id}",
