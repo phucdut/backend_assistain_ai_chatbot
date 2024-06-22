@@ -34,40 +34,71 @@ class KnowledgeBaseServiceImpl(KnowledgeBaseService):
     def create(
         self, db: Session, chatbot_id: str, file_path: str, file_name: str
     ) -> KnowledgeBaseOut:
-        # Check if chatbot name already exists in the database
-        existing_knowledge_base = self.__crud_knowledgeBase.get_by_name_knowledge_base(db=db, name=file_name, chatbot_id=chatbot_id)
-        if existing_knowledge_base:
-            logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.create: Knowledge base title already exists"
-            )
-            raise HTTPException(
-                detail="Create knowledge base failed: Knowledge base title already exists",
-                status_code=400,
-            )
         try:
-            content_data = utils.read_pdf(file_path)
+            # Kiểm tra xem tiêu đề kiến thức đã tồn tại trong cơ sở dữ liệu chưa
+            existing_knowledge_base = (
+                self.__crud_knowledgeBase.get_by_name_knowledge_base(
+                    db=db, name=file_name, chatbot_id=chatbot_id
+                )
+            )
+            if existing_knowledge_base:
+                logger.exception(
+                    f"Exception in {__name__}.{self.__class__.__name__}.create: Tiêu đề kiến thức đã tồn tại"
+                )
+                raise HTTPException(
+                    detail="Thêm kiến thức thất bại: Tiêu đề kiến thức đã tồn tại",
+                    status_code=400,
+                )
+
+            # Đọc nội dung từ tệp tin
+            if not os.path.exists(file_path):
+                raise HTTPException(
+                    detail=f"Đường dẫn tệp tin {file_path} không tồn tại",
+                    status_code=400,
+                )
+
+            content_data = None
+            if file_name.endswith(".pdf"):
+                content_data = utils.read_pdf(file_path)
+            elif file_name.endswith(".csv"):
+                content_data = utils.read_csv(file_path)
+            elif file_name.endswith(".docx"):
+                content_data = utils.read_docx(file_path)
+            else:
+                raise HTTPException(
+                    detail="Định dạng tệp tin không được hỗ trợ",
+                    status_code=400,
+                )
+
+            # Xây dựng dữ liệu cho mục kiến thức
             knowledge_base_data = {
-                "title": file_name,  # Add appropriate title
+                "title": file_name,  # Thêm tiêu đề phù hợp
                 "content_type": file_name.split(".")[
                     -1
-                ],  # Add appropriate content type
+                ].lower(),  # Định dạng loại nội dung dựa trên tên tệp
                 "file_path": file_path,
                 "character_count": len(content_data),
                 "file_size": os.path.getsize(file_path),
                 "chatbot_id": chatbot_id,
             }
+
+            # Tạo mục kiến thức mới trong cơ sở dữ liệu
             KN_created = self.__crud_knowledgeBase.create(
                 db=db, obj_in=knowledge_base_data
             )
+
             if KN_created:
                 result: KnowledgeBaseOut = KnowledgeBaseOut(
                     **KN_created.__dict__
                 )
                 return result
+
+        except HTTPException:
+            raise  # Ném lại HTTPException để truyền lên
         except Exception as e:
             traceback.print_exc()
             raise HTTPException(
-                detail="Add KnowledgeBase failed", status_code=400
+                detail="Thêm kiến thức thất bại", status_code=400
             )
 
     def get_knowledgeBase_by_chatbot_id(self, db: Session, chatbot_id: str):
@@ -124,7 +155,7 @@ class KnowledgeBaseServiceImpl(KnowledgeBaseService):
             raise HTTPException(
                 status_code=400, detail="Get all knowledge base failed"
             )
-        
+
     def delete(
         self,
         db: Session,
@@ -134,16 +165,17 @@ class KnowledgeBaseServiceImpl(KnowledgeBaseService):
     ):
         try:
             knowledge_base_found = self.__crud_knowledgeBase.get_one_by(
-                db=db, filter={"id": knowledge_base_id, "chatbot_id": chatbot_id}
+                db=db,
+                filter={"id": knowledge_base_id, "chatbot_id": chatbot_id},
             )
 
             if knowledge_base_found is None:
                 return JSONResponse(
-                    status_code=404, 
+                    status_code=404,
                     content={
                         "status": 404,
-                        "message": "Knowledge base not found"
-                    }
+                        "message": "Knowledge base not found",
+                    },
                 )
 
             knowledge_base_deleted = self.__crud_knowledgeBase.remove(
@@ -154,11 +186,11 @@ class KnowledgeBaseServiceImpl(KnowledgeBaseService):
                 f"Exception in {__name__}.{self.__class__.__name__}.remove_knowledge_base"
             )
             return JSONResponse(
-                status_code=400, 
+                status_code=400,
                 content={
                     "status": 400,
-                    "message": "Remove knowledge base failed"
-                }
+                    "message": "Remove knowledge base failed",
+                },
             )
         return {
             "chatbot_id": chatbot_id,

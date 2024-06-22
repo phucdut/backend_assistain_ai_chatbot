@@ -1,0 +1,105 @@
+﻿,,,,,,
+STT,Chuyên ngành,Tên ngành,Mã ngành,Tổ hợp môn,Điểm chuẩn,Ghi chú
+1,Cơ khí hàng không,Kỹ thuật cơ khí,7520103B,"A00, A01",23.1,Tốt nghiệp THPT
+2,,Chương trình đào tạo kỹ sư chất lượng cao Việt-Pháp,PFIEV,"A00, A01",21,Tốt nghiệp THPT
+3,Công nghệ dầu khí và khai thác dầu,Công nghệ dầu khí và khai thác dầu,7510701,"A00, D07",21.75,Tốt nghiệp THPT
+4,Xây dựng dân dụng và công nghiệp,Kỹ thuật xây dựng,7580201,"A00, A01",18.6,Tốt nghiệp THPT
+5,Tin học xây dựng,Kỹ thuật xây dựng,7580201A,"A00, A01",17,Tốt nghiệp THPT
+6,Kỹ thuật cơ điện tử,Kỹ thuật cơ điện tử,7520114,"A00, A01",24.55,Tốt nghiệp THPT
+7,Kỹ thuật môi trường,Kỹ thuật môi trường,7520320,"A00, D07",17.5,Tốt nghiệp THPT
+8,Công nghệ kỹ thuật Vật liệu xây dựng,Công nghệ kỹ thuật vật liệu xây dựng,7510105,"A00, A01",17,Tốt nghiệp THPT
+9,Công nghệ thực phẩm,Công nghệ thực phẩm,7540101,"A00, B00, D07",22.1,Tốt nghiệp THPT
+10,Kinh tế xây dựng,Kinh tế xây dựng,7580301,"A00, A01",20,Tốt nghiệp THPT
+11,Kỹ thuật nhiệt,Kỹ thuật nhiệt,7520115,"A00, A01",19.25,Tốt nghiệp THPT
+12,Kỹ thuật điện,Kỹ thuật điện,7520201,"A00, A01",22.4,Tốt nghiệp THPT
+13,Quản lý tài nguyên và môi trường,Quản lý tài nguyên và môi trường,7850101,"A00, D07",17,Tốt nghiệp THPT
+14,Kỹ thuật hệ thống công nghiệp,Kỹ thuật hệ thống công nghiệp,7520118,"A00, A01",17,Tốt nghiệp THPT
+15,Kiến trúc,Kiến trúc,7580101,"V00, V01, V02",22,Tốt nghiệp THPT
+16,Kỹ thuật cơ sở hạ tầng,Kỹ thuật cơ sở hạ tầng,7580210,"A00, A01",17,Tốt nghiệp THPT
+17,Công nghệ chế tạo máy,Công nghệ chế tạo máy,7510202,"A00, A01",22.5,Tốt nghiệp THPT
+18,Quản lý công nghiệp,Quản lý công nghiệp,7510601,"A00, A01",22,Tốt nghiệp THPT
+19,Kỹ thuật tàu thủy,Kỹ thuật tàu thuỷ,7520122,"A00, A01",17,Tốt nghiệp THPT
+20,Kỹ thuật hóa học,Kỹ thuật hoá học,7520301,"A00, D07",21.3,Tốt nghiệp THPT
+21,Công nghệ sinh học,Công nghệ sinh học,7420201,"A00, B00, D07",23.33,Tốt nghiệp THPT
+22,,Công nghệ thông tin,7480201,"A00, A01",25.86,Đặc thù - Hợp tác doanh nghiệp; Tốt nghiệp THPT
+23,,Kỹ thuật xây dựng,7580201B,"A00, A01",17,Chuyên ngành Kỹ thuật và quản lý xây dựng đô thị thông minh; Tốt nghiệp THPT
+24,Kiến trúc,Kiến trúc,7580101,"V00, V01, V02, XDHB",24.63,Học bạ
+25,Cơ khí hàng không,Kỹ thuật cơ khí,7520103B,"A00, A01, XDHB",26.78,Học bạ
+26,,Chương trình đào tạo kỹ sư chất lượng cao Việt-Pháp,PFIEV,"A00, A01, XDHB",26.68,Học bạ
+27,Công nghệ dầu khí và khai thác dầu,Công nghệ dầu khí và khai thác dầu,7510701,"A00, D07, XDHB",26.15,Học bạ
+28,Xây dựng dân dụng và công nghiệp,Kỹ thuật xây dựng,7580201,"A00, A01, XDHB",23.8,Học bạ
+29,Tin học xây dựng,Kỹ thuật xây dựng,7580201A,"A00, A01, XDHB",21.43,Học bạ
+30,,Hệ thống nhúng thông minh và IoT,7480118VM,"A01, D07, XDHB",25.06,Chương trình tiên tiến Việt-Mỹ; Học bạ
+31,Kỹ thuật cơ điện tử,Kỹ thuật cơ điện tử,7520114,"A00, A01, XDHB",27.65,Học bạ
+32,Kỹ thuật môi trường,Kỹ thuật môi trường,7520320,"A00, B00, D07, XDHB",20.35,Học bạ
+33,Công nghệ kỹ thuật Vật liệu xây dựng,Công nghệ kỹ thuật vật liệu xây dựng,7510105,"A00, A01, XDHB",18.73,Học bạ
+34,Công nghệ thực phẩm,Công nghệ thực phẩm,7540101,"A00, B00, D07, XDHB",26.66,Học bạ
+35,Kinh tế xây dựng,Kinh tế xây dựng,7580301,"A00, A01, XDHB",25.36,Học bạ
+36,Kỹ thuật nhiệt,Kỹ thuật nhiệt,7520115,"A00, A01, XDHB",24.42,Học bạ
+37,Quản lý tài nguyên và môi trường,Quản lý tài nguyên và môi trường,7850101,"A00, B00, D07, XDHB",23.91,Học bạ
+38,Kỹ thuật hệ thống công nghiệp,Kỹ thuật hệ thống công nghiệp,7520118,"A00, A01, XDHB",23.25,Học bạ
+39,Kỹ thuật cơ sở hạ tầng,Kỹ thuật cơ sở hạ tầng,7580210,"A00, A01, XDHB",21.11,Học bạ
+40,Công nghệ chế tạo máy,Công nghệ chế tạo máy,7510202,"A00, A01, XDHB",26.77,Học bạ
+41,Quản lý công nghiệp,Quản lý công nghiệp,7510601,"A00, A01, XDHB",25.94,Học bạ
+42,Kỹ thuật tàu thủy,Kỹ thuật tàu thuỷ,7520122,"A00, A01, XDHB",19.06,Học bạ
+43,Kỹ thuật hóa học,Kỹ thuật hoá học,7520301,"A00, D07, XDHB",26.6,Học bạ
+44,Công nghệ sinh học,Công nghệ sinh học,7420201A,"A00, B00, D07, XDHB",27.74,Học bạ; Chuyên ngành Công nghệ sinh học Y Dược
+45,Công nghệ sinh học,Công nghệ sinh học,7420201,"A00, B00, D07, XDHB",27.2,Học bạ
+46,,Chương trình đào tạo kỹ sư chất lượng cao Việt-Pháp,PFIEV,DGNLHCM,700,Đánh giá năng lực Đại học Quốc gia TPHCM
+47,Kỹ thuật môi trường,Kỹ thuật môi trường,7520320,DGNLHCM,636,Đánh giá năng lực Đại học Quốc gia TPHCM
+48,Công nghệ kỹ thuật Vật liệu xây dựng,Công nghệ kỹ thuật vật liệu xây dựng,7510105,DGNLHCM,621,Đánh giá năng lực Đại học Quốc gia TPHCM
+49,Công nghệ thực phẩm,Công nghệ thực phẩm,7540101,DGNLHCM,729,Đánh giá năng lực Đại học Quốc gia TPHCM
+50,Kỹ thuật cơ sở hạ tầng,Kỹ thuật cơ sở hạ tầng,7580210,DGNLHCM,616,Đánh giá năng lực Đại học Quốc gia TPHCM
+51,Công nghệ sinh học,Công nghệ sinh học,7420201,DGNLHCM,744,Đánh giá năng lực Đại học Quốc gia TPHCM
+52,Xây dựng dân dụng và công nghiệp,Kỹ thuật xây dựng,7580201,DGNLHCM,602,Đánh giá năng lực Đại học Quốc gia TPHCM
+53,,Công nghệ thông tin,7480201A,DGNLHCM,820,"Ngoại ngữ Nhật, Đánh giá năng lực Đại học Quốc gia TPHCM"
+54,Cơ khí hàng không,Kỹ thuật cơ khí,7520103B,DGNLHCM,769,Đánh giá năng lực Đại học Quốc gia TPHCM
+55,Kỹ thuật điều khiển và tự động hóa,Kỹ thuật điều khiển và tự động hoá,7520216,DGNLHCM,876,Đánh giá năng lực Đại học Quốc gia TPHCM
+56,Công nghệ dầu khí và khai thác dầu,Công nghệ dầu khí và khai thác dầu,7510701,DGNLHCM,636,Đánh giá năng lực Đại học Quốc gia TPHCM
+57,Tin học xây dựng,Kỹ thuật xây dựng,7580201A,DGNLHCM,682,Đánh giá năng lực Đại học Quốc gia TPHCM
+58,,Chương trình tiên tiến ngành Hệ thống nhúng,7480118VM,DGNLHCM,806,Đánh giá năng lực Đại học Quốc gia TPHCM; Chương trình tiên tiến Việt-Mỹ
+59,Kỹ thuật cơ điện tử,Kỹ thuật cơ điện tử,7520114,DGNLHCM,815,Đánh giá năng lực Đại học Quốc gia TPHCM
+60,Kinh tế xây dựng,Kinh tế xây dựng,7580301,DGNLHCM,616,Đánh giá năng lực Đại học Quốc gia TPHCM
+61,Kỹ thuật nhiệt,Kỹ thuật nhiệt,7520115,DGNLHCM,607,Đánh giá năng lực Đại học Quốc gia TPHCM
+62,Quản lý tài nguyên và môi trường,Quản lý tài nguyên và môi trường,7850101,DGNLHCM,685,Đánh giá năng lực Đại học Quốc gia TPHCM
+63,Kỹ thuật hệ thống công nghiệp,Kỹ thuật hệ thống công nghiệp,7520118,DGNLHCM,629,Đánh giá năng lực Đại học Quốc gia TPHCM
+64,Công nghệ chế tạo máy,Công nghệ chế tạo máy,7510202,DGNLHCM,714,Đánh giá năng lực Đại học Quốc gia TPHCM
+65,Quản lý công nghiệp,Quản lý công nghiệp,7510601,DGNLHCM,703,Đánh giá năng lực Đại học Quốc gia TPHCM
+66,Kỹ thuật tàu thủy,Kỹ thuật tàu thuỷ,7520122,DGNLHCM,659,Đánh giá năng lực Đại học Quốc gia TPHCM
+67,Kỹ thuật hóa học,Kỹ thuật hoá học,7520301,DGNLHCM,772,Đánh giá năng lực Đại học Quốc gia TPHCM
+68,Công nghệ sinh học,Công nghệ sinh học,7420201A,DGNLHCM,757,Chuyên ngành Công nghệ sinh học Y Dược; Đánh giá năng lực Đại học Quốc gia TPHCM
+69,,Công nghệ thông tin,7480201,DGNLHCM,927,Đánh giá năng lực Đại học Quốc gia TPHCM
+70,Kỹ thuật điều khiển và tự động hóa,Kỹ thuật điều khiển và tự động hoá,7520216,"A00, A01",25.3,Tốt nghiệp THPT
+71,Kỹ thuật điều khiển và tự động hóa,Kỹ thuật điều khiển và tự động hoá,7520216,"A00, A01, XDHB",28.19,Học bạ
+72,Kỹ thuật điện,Kỹ thuật điện,7520201,"A00, A01, XDHB",26.8,Học bạ
+73,Kỹ thuật điện,Kỹ thuật điện,7520201,DGNLHCM,725,Đánh giá năng lực Đại học Quốc gia TPHCM
+74,Kỹ thuật điện tử - viễn thông,Kỹ thuật điện tử - viễn thông,7520207,"A00, A01",24.05,Tốt nghiệp THPT
+75,Kỹ thuật điện tử - viễn thông,Kỹ thuật điện tử - viễn thông,7520207VM,"A01, D07, XDHB",23.21,Học bạ; Chương trình tiên tiến Việt-Mỹ
+76,Kỹ thuật điện tử - viễn thông,Kỹ thuật điện tử - viễn thông,7520207,"A00, A01, XDHB",27.41,Học bạ
+77,Kỹ thuật điện tử - viễn thông,Kỹ thuật điện tử - viễn thông,7520207,DGNLHCM,836,Đánh giá năng lực Đại học Quốc gia TPHCM
+78,Kỹ thuật máy tính,Kỹ thuật máy tính,7480106,"A00, A01",25.45,Tốt nghiệp THPT
+79,Kỹ thuật máy tính,Kỹ thuật máy tính,7480106,"A00, A01, XDHB",28.4,Học bạ
+80,Kỹ thuật máy tính,Kỹ thuật máy tính,7480106,DGNLHCM,901,Đánh giá năng lực Đại học Quốc gia TPHCM
+81,Cơ khí động lực,Kỹ thuật cơ khí,7520103A,"A00, A01",22.4,Tốt nghiệp THPT
+82,Cơ khí động lực,Kỹ thuật cơ khí,7520103A,"A00, A01, XDHB",26.45,Học bạ
+83,Khoa học dữ liệu và Trí tuệ nhân tạo,Công nghệ thông tin,7480201B,"A00, A01",26.45,Đặc thù - Hợp tác doanh nghiệp; Tốt nghiệp THPT
+84,Khoa học dữ liệu và Trí tuệ nhân tạo,Công nghệ thông tin,7480201B,DGNLHCM,979.6,Chuyên ngành Khoa học dữ liệu và Trí tuệ nhân tạo; Đánh giá năng lực Đại học Quốc gia TPHCM
+85,,Kỹ thuật ô tô,7520130,"A00, A01",25.05,Tốt nghiệp THPT
+86,,Kỹ thuật ô tô,7520130,DGNLHCM,830,Đánh giá năng lực Đại học Quốc gia TPHCM
+87,Kỹ thuật xây dựng công trình thủy,Kỹ thuật xây dựng,7580202,"A00, A01",17,Tốt nghiệp THPT
+88,Kỹ thuật xây dựng công trình thủy,Kỹ thuật xây dựng,7580202,"A00, A01, XDHB",18.68,Học bạ
+89,Kỹ thuật xây dựng công trình thủy,Kỹ thuật xây dựng,7580202,DGNLHCM,789,Đánh giá năng lực Đại học Quốc gia TPHCM
+90,Kỹ thuật xây dựng công trình giao thông,kỹ thuật xây dựng công trình giao thông,7580205,"A00, A01",18,Tốt nghiệp THPT
+91,Kỹ thuật xây dựng công trình giao thông,kỹ thuật xây dựng công trình giao thông,7580205,"A00, A01, XDHB",19.17,Học bạ
+92,Kỹ thuật xây dựng công trình giao thông,kỹ thuật xây dựng công trình giao thông,7580205,DGNLHCM,664,Đánh giá năng lực Đại học Quốc gia TPHCM
+93,Cơ khí động lực,Kỹ thuật cơ khí,7520103A,DGNLHCM,715,Đánh giá năng lực Đại học Quốc gia TPHCM
+94,Công nghệ sinh học,Công nghệ sinh học,7420201A,"A00, B00, D07",23.45,Tốt nghiệp THPT
+95,,Công nghệ thông tin,7480201A,"A00, A01, D28",25,Tốt nghiệp THPT
+96,,Kỹ thuật xây dựng,7580201C,"A00, A01",17,Chuyên ngành Mô hình thông tin và trí tuệ nhân tạo trong xây dựng; Tốt nghiệp THPT
+97,Kỹ thuật điện tử - viễn thông,Kỹ thuật điện tử - viễn thông,7520207VM,DGNLHCM,620,Chương trình tiên tiếng Việt - Mỹ; Đánh giá năng lực Đại học Quốc gia TPHCM
+98,,Kỹ thuật xây dựng,7580201B,DGNLHCM,642,Chuyên ngành Kỹ thuật và quản lý xây dựng đô thị thông minh; Đánh giá năng lực Đại học Quốc gia TPHCM
+99,,Kỹ thuật xây dựng,7580201C,DGNLHCM,642,Chuyên ngành Mô hình thông tin và trí tuệ nhân tạo trong xây dựng; Đánh giá năng lực Đại học Quốc gia TPHCM
+100,,Kỹ thuật xây dựng,7580201B,"A00, A01, XDHB",22.01,Học bạ; Chuyên ngành Kỹ thuật và quản lý xây dựng đô thị thông minh
+101,,Kỹ thuật xây dựng,7580201C,"A00, A01, XDHB",23.49,Học bạ; Chuyên ngành Mô hình thông tin và trí tuệ nhân tạo trong xây dựng
+102,,Hệ thống nhúng thông minh và IoT,7480118VM,"A01, D07",20.33,Chương trình tiên tiến Việt - Mỹ; Tốt nghiệp THPT
+103,Kỹ thuật điện tử - viễn thông,Kỹ thuật điện tử - viễn thông,7520207VM,"A01, D07",17.5,Chương trình tiên tiến Việt - Mỹ; Tốt nghiệp THPT

@@ -1,5 +1,6 @@
 import json
 import traceback
+from pathlib import Path
 import time
 from typing import List, Optional
 from fastapi.responses import JSONResponse
@@ -100,9 +101,10 @@ class ChatBotServiceImpl(ChatBotService):
         )
         # prompt=self.DEFAULT_PROMPT)
 
-        
         # Check if chatbot name already exists in the database
-        existing_chatbot = self.__crud_chatbot.get_by_name(db=db, name=chatbot_create.chatbot_name, user_id=user_id)
+        existing_chatbot = self.__crud_chatbot.get_by_name(
+            db=db, name=chatbot_create.chatbot_name, user_id=user_id
+        )
         if existing_chatbot:
             logger.exception(
                 f"Exception in {__name__}.{self.__class__.__name__}.create_chatbot: Chatbot name already exists"
@@ -111,7 +113,6 @@ class ChatBotServiceImpl(ChatBotService):
                 detail="Create Chatbot failed: Chatbot name already exists",
                 status_code=400,
             )
-        
 
         # logger.info(f"ChatbotInDB: {chatbot_in_db}")
         try:
@@ -156,7 +157,7 @@ class ChatBotServiceImpl(ChatBotService):
         #         detail="Update Chatbot failed: Chatbot name already exists",
         #         status_code=400,
         #     )
-        
+
         try:
             chatbot = self.get_one_with_filter_or_none(db=db, filter=filter)
             if chatbot is None:
@@ -354,12 +355,27 @@ class ChatBotServiceImpl(ChatBotService):
                 {"role": "system", "content": chatbot.prompt}
             )
             for knowledgeBase in knowledgeBases:
+                file_path = knowledgeBase["file_path"]
+    
+                # Determine file extension
+                file_extension = Path(file_path).suffix.lower()
+
+                if file_extension == ".pdf":
+                    content = utils.read_pdf(file_path)
+                elif file_extension == ".csv":
+                    content = utils.read_csv(file_path)
+                elif file_extension == ".docx":
+                    content = utils.read_docx(file_path)
+                else:
+                    raise ValueError(f"Unsupported file type: {file_extension}")
+                # print(f"content: {content}")
                 temp_knowledgeBase.append(
                     {
                         "role": "system",
-                        "content": utils.read_pdf(knowledgeBase["file_path"]),
+                        "content": content,
                     }
                 )
+
             for message in messages:
                 temp_knowledgeBase.append(
                     {"role": "user", "content": message["message"]}
@@ -473,9 +489,13 @@ class ChatBotServiceImpl(ChatBotService):
                 status_code=400, detail="Get all chatbot failed"
             )
 
-    def get_all_or_none_id(self, db: Session, current_user_membership: UserSubscriptionPlan) -> Optional[List[ChatBotOut]]:
+    def get_all_or_none_id(
+        self, db: Session, current_user_membership: UserSubscriptionPlan
+    ) -> Optional[List[ChatBotOut]]:
         try:
-            results = self.__crud_chatbot.get_multi(db=db, filter_param={"user_id": current_user_membership.u_id})
+            results = self.__crud_chatbot.get_multi(
+                db=db, filter_param={"user_id": current_user_membership.u_id}
+            )
             return results
         except:
             logger.exception(

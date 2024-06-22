@@ -16,12 +16,13 @@ class User(Base):
     avatar_url = Column(
         String,
         nullable=False,
-        default="http://localhost:3000/Ellipse%201.svg",
+        default="https://frontend-assistain-ai-chatbot.vercel.app/Ellipse%201.svg",
+        # default="http://localhost:3000/Ellipse%201.svg",
     )
     payment_information = Column(String, nullable=True)
     is_verified = Column(Boolean, default=False, nullable=False)
     user_role = Column(String, nullable=False, default="user")
-    
+
     sessions = relationship("UserSession", back_populates="user")
     subscriptions = relationship("UserSubscription", back_populates="user")
     chatbots = relationship("ChatBot", back_populates="user")

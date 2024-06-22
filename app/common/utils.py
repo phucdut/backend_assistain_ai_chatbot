@@ -3,6 +3,7 @@ from typing import List
 import csv
 
 import PyPDF2
+from docx import Document
 from passlib.context import CryptContext
 from sqlalchemy.orm import class_mapper
 
@@ -103,8 +104,18 @@ def read_pdf(file_path):
     return text
 
 def read_csv(file_path):
+    rows = []
     with open(file_path, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
-        next(reader)
+        next(reader)  # Bỏ qua dòng tiêu đề nếu có
         for row in reader:
-            yield row
+            rows.append(','.join(row))
+    content = '\n'.join(rows)
+    return content
+
+def read_docx(file_path):
+    doc = Document(file_path)
+    content = []
+    for para in doc.paragraphs:
+        content.append(para.text)
+    return '\n'.join(content)
