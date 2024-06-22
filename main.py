@@ -17,7 +17,7 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
-    "https://frontend-assistain-ai-chatbot.vercel.app/",
+    "https://frontend-assistain-ai-chatbot.vercel.app",
     "http://localhost:3000",
     "http://192.168.200.204:3000",
     "http://192.168.1.2:3000",
