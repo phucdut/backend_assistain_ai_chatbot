@@ -8,6 +8,7 @@ from uuid import UUID
 import PyPDF2
 import requests
 from fastapi import Depends, HTTPException
+from fastapi.responses import JSONResponse
 from openai import OpenAI
 from sqlalchemy.orm import Session
 from datetime import datetime
@@ -202,6 +203,52 @@ class ConversationServiceImpl(ConversationService):
                 f"Exception in {__name__}.{self.__class__.__name__}.message"
             )
             return None
+        
+    def delete(
+        self,
+        db: Session,
+        chatbot_id: str,
+        conversation_id: str,
+        # current_user_membership: UserSubscriptionPlan,
+    ):
+        try:
+            conversation_found = self.__crud_conversation.get_one_by(
+                db=db,
+                filter={"id": conversation_id, "chatbot_id": chatbot_id},
+            )
+
+            if conversation_found is None:
+                return JSONResponse(
+                    status_code=404,
+                    content={
+                        "status": 404,
+                        "message": "Conversation not found",
+                    },
+                )
+
+            conversation_deleted = self.__crud_conversation.remove(
+                db=db, id=conversation_found.id
+            )
+        except:
+            logger.exception(
+                f"Exception in {__name__}.{self.__class__.__name__}.remove_conversation"
+            )
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "status": 400,
+                    "message": "Remove conversation failed",
+                },
+            )
+        return {
+            "chatbot_id": chatbot_id,
+            "conversation": {
+                "id": conversation_deleted.id,
+                "conversation_name": conversation_deleted.conversation_name,
+                "deleted_at": conversation_deleted.deleted_at,
+            },
+        }
+
 
 
 # # ask question
