@@ -54,6 +54,7 @@ class ChatBotServiceImpl(ChatBotService):
 
     def __init__(self):
         self.__crud_chatbot = crud_chatbot
+        self.__crud_conversation = crud_conversation
         self.__crud_user = crud_user
         self.__user_session_service: UserSessionService = (
             UserSessionServiceImpl()
@@ -208,7 +209,40 @@ class ChatBotServiceImpl(ChatBotService):
                         "message": "Chatbot not found",
                     },
                 )
+            
+            from app.services.impl.conversation_service_impl import (
+                ConversationServiceImpl,
+            )
+            from app.services.impl.knowledgebase_service_impl import (
+                KnowledgeBaseServiceImpl,
+            )
 
+
+            conversation_service = ConversationServiceImpl()
+            knowledge_base_service = KnowledgeBaseServiceImpl()
+
+            # Lấy tất cả các tập tin kiến thức liên quan đến chatbot
+            knowledgeBases = (knowledge_base_service.get_knowledgeBase_by_chatbot_id(
+                db=db, chatbot_id = chatbot_id
+            ))
+            # print(f"knowledgeBases id: {knowledgeBases}")
+            
+            # Xóa các tập tin liên quan đến chatbot
+            for kb in knowledgeBases:
+                print(f"knowledgeBase id: {kb['id']}")  # Truy cập thuộc tính 'id' của từng dict
+                knowledge_base_service.delete(db=db, chatbot_id=chatbot_id, knowledge_base_id=kb['id'])
+
+            # Lấy tất cả các cuộc hội thoại liên quan đến chatbot
+            conversations = (conversation_service.get_all_or_none_with_chatbot_id(
+                db=db, chatbot_id = chatbot_id, current_user_membership=current_user_membership
+            ))
+            
+            # Xóa các cuộc hội thoại liên quan đến chatbot
+            for conv in conversations["results"]:
+                print(f"conversation id: {conv.id}")
+                conversation_service.delete(db=db, chatbot_id=chatbot_id, conversation_id=conv.id)
+
+            # Xóa chatbot
             chatbot_deleted = self.__crud_chatbot.remove(
                 db=db, id=chatbot_found.id
             )
@@ -356,7 +390,7 @@ class ChatBotServiceImpl(ChatBotService):
             )
             for knowledgeBase in knowledgeBases:
                 file_path = knowledgeBase["file_path"]
-    
+
                 # Determine file extension
                 file_extension = Path(file_path).suffix.lower()
 
