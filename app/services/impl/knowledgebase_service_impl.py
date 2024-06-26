@@ -35,25 +35,25 @@ class KnowledgeBaseServiceImpl(KnowledgeBaseService):
         self, db: Session, chatbot_id: str, file_path: str, file_name: str
     ) -> KnowledgeBaseOut:
         try:
-            # Kiểm tra xem tiêu đề kiến thức đã tồn tại trong cơ sở dữ liệu chưa
-            existing_knowledge_base = (
-                self.__crud_knowledgeBase.get_by_name_knowledge_base(
-                    db=db, name=file_name, chatbot_id=chatbot_id
-                )
-            )
-            if existing_knowledge_base:
-                logger.exception(
-                    f"Exception in {__name__}.{self.__class__.__name__}.create: Tiêu đề kiến thức đã tồn tại"
-                )
-                raise HTTPException(
-                    detail="Thêm kiến thức thất bại: Tiêu đề kiến thức đã tồn tại",
-                    status_code=400,
-                )
+            # # Kiểm tra xem tiêu đề kiến thức đã tồn tại trong cơ sở dữ liệu chưa
+            # existing_knowledge_base = (
+            #     self.__crud_knowledgeBase.get_by_name_knowledge_base(
+            #         db=db, name=file_name, chatbot_id=chatbot_id
+            #     )
+            # )
+            # if existing_knowledge_base:
+            #     logger.exception(
+            #         f"Exception in {__name__}.{self.__class__.__name__}.create: Tiêu đề kiến thức đã tồn tại"
+            #     )
+            #     raise HTTPException(
+            #         detail="Thêm kiến thức thất bại: Tiêu đề kiến thức đã tồn tại",
+            #         status_code=400,
+            #     )
 
             # Đọc nội dung từ tệp tin
             if not os.path.exists(file_path):
                 raise HTTPException(
-                    detail=f"Đường dẫn tệp tin {file_path} không tồn tại",
+                    detail=f"File path {file_path} does not exist.",
                     status_code=400,
                 )
 
@@ -66,7 +66,7 @@ class KnowledgeBaseServiceImpl(KnowledgeBaseService):
                 content_data = utils.read_docx(file_path)
             else:
                 raise HTTPException(
-                    detail="Định dạng tệp tin không được hỗ trợ",
+                    detail="Unsupported file type",
                     status_code=400,
                 )
 
@@ -98,7 +98,7 @@ class KnowledgeBaseServiceImpl(KnowledgeBaseService):
         except Exception as e:
             traceback.print_exc()
             raise HTTPException(
-                detail="Thêm kiến thức thất bại", status_code=400
+                detail="Adding knowledge about failures", status_code=400
             )
 
     def get_knowledgeBase_by_chatbot_id(self, db: Session, chatbot_id: str):
