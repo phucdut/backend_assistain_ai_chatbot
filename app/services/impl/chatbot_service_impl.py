@@ -103,17 +103,17 @@ class ChatBotServiceImpl(ChatBotService):
         # prompt=self.DEFAULT_PROMPT)
 
         # Check if chatbot name already exists in the database
-        existing_chatbot = self.__crud_chatbot.get_by_name(
-            db=db, name=chatbot_create.chatbot_name, user_id=user_id
-        )
-        if existing_chatbot:
-            logger.exception(
-                f"Exception in {__name__}.{self.__class__.__name__}.create_chatbot: Chatbot name already exists"
-            )
-            raise HTTPException(
-                detail="Create Chatbot failed: Chatbot name already exists",
-                status_code=400,
-            )
+        # existing_chatbot = self.__crud_chatbot.get_by_name(
+        #     db=db, name=chatbot_create.chatbot_name, user_id=user_id
+        # )
+        # if existing_chatbot:
+        #     logger.exception(
+        #         f"Exception in {__name__}.{self.__class__.__name__}.create_chatbot: Chatbot name already exists"
+        #     )
+        #     raise HTTPException(
+        #         detail="Create Chatbot failed: Chatbot name already exists",
+        #         status_code=400,
+        #     )
 
         # logger.info(f"ChatbotInDB: {chatbot_in_db}")
         try:
